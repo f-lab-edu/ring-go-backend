@@ -3,3 +3,7 @@
 
 # 🛠 Skill Stack
 ![Ring-Go](https://github.com/user-attachments/assets/21f081f7-a961-485e-a447-89e59aaeaf83)
+
+
+# 🧩 System Architecture Diagram
+![Ring-Go_diagram](https://github.com/user-attachments/assets/b980394f-d7dd-4259-bc50-8aa3a24e419f)
