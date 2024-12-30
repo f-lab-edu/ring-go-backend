@@ -6,4 +6,4 @@
 
 
 # 🧩 System Architecture Diagram
-![Ring-Go_diagram](https://github.com/user-attachments/assets/b980394f-d7dd-4259-bc50-8aa3a24e419f)
+![Ring-Go_diagram](https://github.com/user-attachments/assets/c4e90388-d8a5-4078-8d23-721d375587d1)
