@@ -19,7 +19,7 @@ spring:
   # Redis
   data:
     redis:
-      host: localhost
+      host: redisc-30ort2.vpc-cdb.ntruss.com
       port: 6379
 
   # Kafka
