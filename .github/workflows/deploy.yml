@@ -2,7 +2,6 @@ name: Deploy to NCP Server
 on:
   push:
     branches: [ "main" ]
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -43,5 +42,6 @@ jobs:
         password: ${{ secrets.NCP_SERVER_PASSWORD }}
         script: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
-          docker stop $(docker ps -q --filter ancestor=${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest) || true
+          docker stop ringgo || true
+          docker rm ringgo || true
           docker run -d --name ringgo -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
