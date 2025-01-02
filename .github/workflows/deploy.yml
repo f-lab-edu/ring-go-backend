@@ -44,4 +44,4 @@ jobs:
         script: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
           docker stop $(docker ps -q --filter ancestor=${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest) || true
-          docker run -d --name ringgo -p 8081:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+          docker run -d --name ringgo -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
