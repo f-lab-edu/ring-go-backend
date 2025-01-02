@@ -1,8 +1,7 @@
 name: Deploy to NCP Server
-
 on:
   push:
-    branches: [ "main" ]  # main 브랜치에 push가 발생하면 실행
+    branches: [ "main" ]
 
 jobs:
   build-and-deploy:
@@ -34,15 +33,15 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
         
     - name: Deploy to NCP Server
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.NCP_SERVER_IP }}
         username: ${{ secrets.NCP_SERVER_USERNAME }}
-        key: ${{ secrets.NCP_SERVER_SSH_KEY }}
+        password: ${{ secrets.NCP_SERVER_PASSWORD }}
         script: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
-          docker stop $(docker ps -q --filter ancestor=${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest) || true
-          docker run -d -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+          docker stop $(docker ps -q --filter ancestor=${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest) || true
+          docker run -d -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
