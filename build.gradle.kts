@@ -60,6 +60,14 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+sourceSets {
+	main {
+		kotlin {
+			srcDir("$buildDir/generated/source/kapt/main")
+		}
+	}
+}
+
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
