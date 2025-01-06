@@ -45,6 +45,7 @@ jobs:
           docker stop ringgo || true
           docker rm ringgo || true
           docker run -d --name ringgo \
+            --add-host=${{ secrets.SPRING_DATA_REDIS_HOST }}:${{ secrets.REDIS_IP }} \
             -p 8080:8080 \
             -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
             -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
