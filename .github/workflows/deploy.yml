@@ -44,4 +44,15 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
           docker stop ringgo || true
           docker rm ringgo || true
-          docker run -d --name ringgo -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+          docker run -d --name ringgo \
+            -p 8080:8080 \
+            -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
+            -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
+            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+            -e SPRING_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }} \
+            -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
+            -e SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
+            -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+            -e SPRING_JPA_SHOW_SQL=true \
+            -e LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG \
+            ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
