@@ -35,4 +35,16 @@ class MeetingController(
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(CommonResponse.created(response, "모임이 성공적으로 생성되었습니다."))
     }
+
+    @Operation(summary = "모임 목록 조회", description = "사용자가 가입한 모든 모임 목록을 조회합니다.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "모임 목록 조회 성공")
+    ])
+    @GetMapping
+    fun getMyMeeting(
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<CommonResponse<List<MeetingDto.Get.Response>>> {
+        val response = meetingService.getMyMeeting(user)
+        return ResponseEntity.ok(CommonResponse.success(response))
+    }
 }

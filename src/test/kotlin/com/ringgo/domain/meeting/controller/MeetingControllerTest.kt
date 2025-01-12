@@ -101,4 +101,57 @@ class MeetingControllerTest {
                 .andDo(print())
         }
     }
+
+    @Nested
+    @DisplayName("모임 목록 조회 API")
+    inner class GetMyMeeting {
+        @Test
+        fun `내 모임 목록 조회 성공시 200을 응답한다`() {
+            // given
+            val serviceResponse = listOf(
+                MeetingDto.Get.Response(
+                    id = UUID.fromString("bc106686-d0e5-11ef-97fd-2cf05d34818a"),
+                    name = "우리 가좍 소비 모임",
+                    icon = "group_icon.png",
+                    status = "ACTIVE",
+                    memberCount = 1,
+                    createdAt = "2025-01-12T10:00:00",
+                    isCreator = true
+                )
+            )
+            val expectedResponse = CommonResponse.success(serviceResponse)
+
+            every { meetingService.getMyMeeting(any()) } returns serviceResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/meeting")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { meetingService.getMyMeeting(any()) }
+        }
+
+        @Test
+        fun `모임이 없을 경우 빈 리스트를 반환한다`() {
+            // given
+            val expectedResponse = CommonResponse.success(emptyList<MeetingDto.Get.Response>())
+
+            every { meetingService.getMyMeeting(any()) } returns emptyList()
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/meeting")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { meetingService.getMyMeeting(any()) }
+        }
+    }
 }
