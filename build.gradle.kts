@@ -21,14 +21,23 @@ repositories {
 }
 
 dependencies {
-	// Spring Boot 기본 의존성
+	// Spring Boot
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+	// Database
 	runtimeOnly("com.mysql:mysql-connector-j")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5")
+
+	// QueryDSL
+	implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+	kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
+	kapt("jakarta.annotation:jakarta.annotation-api")
+	kapt("jakarta.persistence:jakarta.persistence-api")
 
 	// JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
@@ -41,30 +50,33 @@ dependencies {
 	// Kafka
 	implementation("org.springframework.kafka:spring-kafka")
 
-	// FCM
-	implementation("com.google.firebase:firebase-admin:9.2.0")
-
-	// QueryDSL
-	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
-	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
-	kapt("jakarta.annotation:jakarta.annotation-api")
-	kapt("jakarta.persistence:jakarta.persistence-api")
-
 	// Swagger
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
 	// Test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation("io.mockk:mockk:1.13.9")
+	testImplementation("com.ninja-squad:springmockk:4.0.2")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+val querydslGeneratedDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+tasks.withType<JavaCompile> {
+	options.generatedSourceOutputDirectory.set(querydslGeneratedDir)
+}
+
 sourceSets {
 	main {
-		kotlin {
-			srcDir("$buildDir/generated/source/kapt/main")
-		}
+		kotlin.srcDirs(querydslGeneratedDir)
+	}
+}
+
+tasks.named("clean") {
+	doLast {
+		querydslGeneratedDir.deleteRecursively()
 	}
 }
 
@@ -74,12 +86,13 @@ kotlin {
 	}
 }
 
+tasks.withType<Test> {
+	useJUnitPlatform()
+	systemProperty("file.encoding", "UTF-8")
+}
+
 allOpen {
 	annotation("jakarta.persistence.Entity")
 	annotation("jakarta.persistence.MappedSuperclass")
 	annotation("jakarta.persistence.Embeddable")
-}
-
-tasks.withType<Test> {
-	useJUnitPlatform()
 }
