@@ -41,3 +41,6 @@ out/
 
 ### Application Config ###
 src/main/resources/application-*.yml
+
+### structure ###
+structure.txt
