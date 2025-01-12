@@ -40,4 +40,20 @@ class MeetingDto {
             val isCreator: Boolean
         )
     }
+
+    @Schema(description = "모임 상태 변경")
+    class UpdateStatus {
+        @Schema(description = "모임 상태 변경 요청")
+        data class Request(
+            @field:NotBlank(message = "변경할 상태값은 필수입니다")
+            @Schema(
+                description = "변경할 상태",
+                example = "ENDED",
+                allowableValues = ["ACTIVE", "ENDED", "DELETED"],
+                type = "string",
+                required = true
+            )
+            val status: String
+        )
+    }
 }
