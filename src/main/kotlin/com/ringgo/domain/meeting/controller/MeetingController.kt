@@ -5,6 +5,8 @@ import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -13,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
 @RestController
@@ -47,4 +50,29 @@ class MeetingController(
         val response = meetingService.getMyMeeting(user)
         return ResponseEntity.ok(CommonResponse.success(response))
     }
+
+    @Operation(summary = "모임 상태 변경", description = "모임의 상태를 변경합니다.")
+    @ApiResponses(value = [
+        ApiResponse(
+            responseCode = "200",
+            description = "상태 변경 성공",
+            content = [Content(
+                mediaType = "application/json",
+                schema = Schema(implementation = MeetingDto.UpdateStatus.Request::class)
+            )]
+        ),
+        ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        ApiResponse(responseCode = "403", description = "권한 없음")
+    ])
+    @PatchMapping("/{id}/status")
+    fun updateStatus(
+        @PathVariable id: UUID,
+        @Valid @RequestBody @Schema(implementation = MeetingDto.UpdateStatus.Request::class)
+        request: MeetingDto.UpdateStatus.Request,
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<CommonResponse<Unit>> {
+        meetingService.updateStatus(id, request, user)
+        return ResponseEntity.ok(CommonResponse.success(Unit, "모임 상태가 성공적으로 변경되었습니다."))
+    }
+
 }

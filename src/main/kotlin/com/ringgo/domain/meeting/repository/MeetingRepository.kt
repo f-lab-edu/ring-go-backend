@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface MeetingRepository : JpaRepository<Meeting, UUID>, MeetingRepositoryCustom {
-    fun existsByNameAndStatusNot(name: String, status: MeetingStatus): Boolean
+
 }
