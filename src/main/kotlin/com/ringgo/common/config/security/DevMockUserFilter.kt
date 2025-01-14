@@ -18,8 +18,8 @@ class DevMockUserFilter : Filter {
         if (SecurityContextHolder.getContext().authentication == null) {
             val mockUser = User(
                 id = UUID.fromString("bc0de3e8-d0e5-11ef-97fd-2cf05d34818a"),
-                name = "전희진",
-                email = "heejin@test.com",
+                name = "신짱구",
+                email = "shinnosuke@test.com",
                 provider = "KAKAO",
                 providerId = "kakao_123"
             )

@@ -1,6 +1,6 @@
 -- 1. 사용자 데이터 삽입
 INSERT INTO user (id, name, email, role, provider, provider_id)
-VALUES (RANDOM_UUID(), '신짱구', 'shinnosuke@test.com', 'NORMAL', 'KAKAO', 'kakao_123'),
+VALUES ('bc0de3e8-d0e5-11ef-97fd-2cf05d34818a', '신짱구', 'shinnosuke@test.com', 'NORMAL', 'KAKAO', 'kakao_123'),
        (RANDOM_UUID(), '봉미선', 'misun@test.com', 'NORMAL', 'KAKAO', 'kakao_456'),
        (RANDOM_UUID(), '신형만', 'hyeongman@test.com', 'NORMAL', 'NAVER', 'naver_789'),
        (RANDOM_UUID(), '신짱아', 'jjangah@test.com', 'NORMAL', 'NAVER', 'naver_123'),
