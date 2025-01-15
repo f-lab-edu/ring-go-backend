@@ -44,6 +44,6 @@ spring:
       port: 6379
 
 swagger:
-  server:
+  local:
     url: http://localhost:8080
     description: Local Server

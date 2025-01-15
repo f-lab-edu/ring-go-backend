@@ -11,8 +11,10 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class SwaggerConfig(
-    @Value("\${swagger.server.url}") private val serverUrl: String,
-    @Value("\${swagger.server.description}") private val serverDescription: String
+    @Value("\${swagger.local.url}") private val localUrl: String,
+    @Value("\${swagger.local.description}") private val localDescription: String,
+    @Value("\${swagger.dev.url}") private val devUrl: String,
+    @Value("\${swagger.dev.description}") private val devDescription: String
 ) {
     @Bean
     fun openAPI(): OpenAPI = OpenAPI()
@@ -24,7 +26,8 @@ class SwaggerConfig(
         )
         .servers(
             listOf(
-                Server().url(serverUrl).description(serverDescription)
+                Server().url(localUrl).description(localDescription),
+                Server().url(devUrl).description(devDescription)
             )
         )
         .components(
