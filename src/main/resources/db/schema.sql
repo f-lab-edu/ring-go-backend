@@ -2,8 +2,8 @@
 CREATE TABLE user
 (
     id UUID NOT NULL,
-    name        VARCHAR(255) NOT NULL,
-    email       VARCHAR(255) NOT NULL,
+    name        VARCHAR(50) NOT NULL,
+    email       VARCHAR(320) NOT NULL,
     role        VARCHAR(50)  NOT NULL DEFAULT 'NORMAL',
     provider    VARCHAR(50)  NOT NULL,
     provider_id VARCHAR(255) NOT NULL,
