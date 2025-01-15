@@ -26,4 +26,18 @@ class MeetingDto {
             val id: UUID
         )
     }
+
+    @Schema(description = "모임 조회")
+    class Get {
+        @Schema(description = "모임 조회 응답")
+        data class Response(
+            val id: UUID,
+            val name: String,
+            val icon: String,
+            val status: String,
+            val memberCount: Int,
+            val createdAt: String,
+            val isCreator: Boolean
+        )
+    }
 }
