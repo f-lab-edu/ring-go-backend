@@ -1,7 +1,10 @@
 spring:
+  profiles:
+    active: local
+
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -11,6 +14,7 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
+    org.springframework.data: DEBUG
 
 server:
   port: 8080

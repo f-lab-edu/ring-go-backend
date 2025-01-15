@@ -1,4 +1,4 @@
-package com.ringgo.config
+package com.ringgo.common.config.jpa
 
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager

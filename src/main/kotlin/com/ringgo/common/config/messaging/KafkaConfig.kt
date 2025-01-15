@@ -1,4 +1,4 @@
-package com.ringgo.config
+package com.ringgo.common.config.messaging
 
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
