@@ -35,7 +35,7 @@ class MeetingDto {
             val name: String,
             val icon: String,
             val status: String,
-            val memberCount: Int,
+            val memberCount: Long,
             val createdAt: String,
             val isCreator: Boolean
         )

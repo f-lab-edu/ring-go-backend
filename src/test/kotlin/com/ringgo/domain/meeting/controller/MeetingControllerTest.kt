@@ -3,9 +3,9 @@ package com.ringgo.domain.meeting.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import com.ringgo.common.dto.CommonResponse
+import com.ringgo.common.fixture.TestUser
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.service.MeetingService
-import com.ringgo.domain.user.entity.User
 import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.*
@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.util.UUID
+import java.util.*
 
 @WebMvcTest(MeetingController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -34,13 +34,9 @@ class MeetingControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    private val testUser = User(
-        id = UUID.fromString("bc0de3e8-d0e5-11ef-97fd-2cf05d34818a"),
-        name = "전희진",
-        email = "heejin@test.com",
-        provider = "KAKAO",
-        providerId = "kakao_123"
-    )
+    // TestUser fixture 사용
+    private val testUser = TestUser.create()
+
 
     @BeforeEach
     fun setUpMockAuth() {
@@ -68,10 +64,8 @@ class MeetingControllerTest {
         @Test
         fun `모임 생성 성공시 201을 응답한다`() {
             // given
-            val serviceResponse = MeetingDto.Create.Response(id = testUser.id)
-            val expectedResponse = CommonResponse.created(serviceResponse, "모임이 성공적으로 생성되었습니다.")
-
-            every { meetingService.create(request, any()) } returns serviceResponse
+            val expectedResponse = MeetingDto.Create.Response(id = testUser.id)
+            every { meetingService.create(request, any()) } returns expectedResponse
 
             // when & then
             mockMvc.perform(
@@ -108,7 +102,7 @@ class MeetingControllerTest {
         @Test
         fun `내 모임 목록 조회 성공시 200을 응답한다`() {
             // given
-            val serviceResponse = listOf(
+            val expectedResponse = listOf(
                 MeetingDto.Get.Response(
                     id = UUID.fromString("bc106686-d0e5-11ef-97fd-2cf05d34818a"),
                     name = "우리 가좍 소비 모임",
@@ -119,9 +113,7 @@ class MeetingControllerTest {
                     isCreator = true
                 )
             )
-            val expectedResponse = CommonResponse.success(serviceResponse)
-
-            every { meetingService.getMyMeeting(any()) } returns serviceResponse
+            every { meetingService.getMyMeeting(any()) } returns expectedResponse
 
             // when & then
             mockMvc.perform(
@@ -138,8 +130,6 @@ class MeetingControllerTest {
         @Test
         fun `모임이 없을 경우 빈 리스트를 반환한다`() {
             // given
-            val expectedResponse = CommonResponse.success(emptyList<MeetingDto.Get.Response>())
-
             every { meetingService.getMyMeeting(any()) } returns emptyList()
 
             // when & then
@@ -148,7 +138,7 @@ class MeetingControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isOk)
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Get.Response>())))
                 .andDo(print())
 
             verify(exactly = 1) { meetingService.getMyMeeting(any()) }

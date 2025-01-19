@@ -10,16 +10,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val devMockUserFilter: DevMockUserFilter  // 의존성 주입
+    private val devMockUserFilter: DevMockUserFilter
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         return http
             .csrf { it.disable() }
+            .headers { headers ->
+                headers.frameOptions { it.disable() }
+            }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger 관련 경로만 명시적 허용
-                    .anyRequest().authenticated()  // 나머지는 인증 필요
+                    .requestMatchers(
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                    ).permitAll()
+                    .anyRequest().authenticated()
             }
             .addFilterBefore(devMockUserFilter, UsernamePasswordAuthenticationFilter::class.java)
             .cors { it.disable() }
