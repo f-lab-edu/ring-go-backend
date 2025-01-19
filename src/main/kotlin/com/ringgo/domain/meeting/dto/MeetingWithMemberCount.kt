@@ -10,7 +10,7 @@ data class MeetingWithMemberCount(
     val name: String,
     val icon: String,
     val status: MeetingStatus,
-    val memberCount: Int,
+    val memberCount: Long,
     val creator: User,
     val createdAt: LocalDateTime
 )
