@@ -3,9 +3,9 @@ package com.ringgo.domain.meeting.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import com.ringgo.common.dto.CommonResponse
+import com.ringgo.common.fixture.TestUser
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.service.MeetingService
-import com.ringgo.domain.user.entity.User
 import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.*
@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.util.UUID
 
 @WebMvcTest(MeetingController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -34,13 +33,9 @@ class MeetingControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    private val testUser = User(
-        id = UUID.fromString("bc0de3e8-d0e5-11ef-97fd-2cf05d34818a"),
-        name = "전희진",
-        email = "heejin@test.com",
-        provider = "KAKAO",
-        providerId = "kakao_123"
-    )
+    // TestUser fixture 사용
+    private val testUser = TestUser.create()
+
 
     @BeforeEach
     fun setUpMockAuth() {

@@ -1,11 +1,10 @@
-# default
 spring:
   profiles:
     active: local
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:

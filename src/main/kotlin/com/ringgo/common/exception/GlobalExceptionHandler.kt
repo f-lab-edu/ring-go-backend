@@ -1,7 +1,7 @@
 package com.ringgo.common.exception
 
 import com.ringgo.common.dto.CommonResponse
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -9,18 +9,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    private val log = LoggerFactory.getLogger(javaClass)
 
-    @ExceptionHandler(BusinessException::class)
-    fun handleBusinessException(e: BusinessException): ResponseEntity<CommonResponse<Nothing>> {
-        return ResponseEntity
-            .status(e.errorCode.status)
-            .body(CommonResponse.error(e.errorCode.status.value(), e.errorCode.message))
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 
+    @ExceptionHandler(BusinessException::class)
+    fun handleBusinessException(e: BusinessException) = ResponseEntity
+        .status(e.errorCode.status)
+        .body(CommonResponse.error(e.errorCode.status.value(), e.errorCode.message))
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    protected fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        log.error("handleMethodArgumentNotValidException", e)
+    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        logger.error { "handleMethodArgumentNotValidException: $e" }
         val errorResponse = ErrorResponse(
             code = ErrorCode.INVALID_INPUT_VALUE.code,
             message = e.bindingResult.fieldError?.defaultMessage ?: "잘못된 입력값입니다"
@@ -29,8 +30,8 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception::class)
-    protected fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-        log.error("handleException", e)
+    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
+        logger.error { "handleException: $e" }
         val errorResponse = ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR)
         return ResponseEntity
             .status(ErrorCode.INTERNAL_SERVER_ERROR.status)
