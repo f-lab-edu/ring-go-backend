@@ -51,11 +51,4 @@ class Meeting(
         }
         this.status = newStatus
     }
-
-    fun validateCreator(userId: UUID) {
-        if (creator.id != userId) {
-            log.warn { "User is not creator - meetingId: $id, userId: $userId, creatorId: ${creator.id}" }
-            throw BusinessException(ErrorCode.NOT_MEETING_CREATOR)
-        }
-    }
 }

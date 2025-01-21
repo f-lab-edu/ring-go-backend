@@ -1,8 +1,11 @@
 package com.ringgo.domain.member.entity
 
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.member.entity.enums.MemberRole
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -41,6 +44,8 @@ class Member(
     @Column(nullable = false)
     val joinedAt: LocalDateTime = LocalDateTime.now(),
 ) {
+    private val log = KotlinLogging.logger {}
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     lateinit var createdAt: LocalDateTime
@@ -48,4 +53,11 @@ class Member(
     @LastModifiedDate
     @Column(nullable = false)
     lateinit var updatedAt: LocalDateTime
+
+    fun validateCreatorRole() {
+        if (role != MemberRole.CREATOR) {
+            log.warn { "User is not creator - memberId: $id, userId: ${user.id}, userRole: $role" }
+            throw BusinessException(ErrorCode.NOT_MEETING_CREATOR)
+        }
+    }
 }

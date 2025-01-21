@@ -70,14 +70,9 @@ class MeetingService(
             ?: throw BusinessException(ErrorCode.NOT_MEETING_MEMBER)
 
         // 2. CREATOR 역할 확인
-        if (member.role != MemberRole.CREATOR) {
-            throw BusinessException(ErrorCode.NOT_MEETING_CREATOR)
-        }
+        member.validateCreatorRole()
 
         // 3. 상태 변경 시도
-        if (!meeting.status.canTransitionTo(request.status)) {
-            throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
-        }
         meeting.updateStatus(request.status)
     }
 }
