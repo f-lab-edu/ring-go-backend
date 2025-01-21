@@ -1,5 +1,6 @@
 package com.ringgo.domain.meeting.dto
 
+import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -34,7 +35,12 @@ class MeetingDto {
             val id: UUID,
             val name: String,
             val icon: String,
-            val status: String,
+            @Schema(
+                description = "모임 상태",
+                example = "ACTIVE",
+                implementation = MeetingStatus::class
+            )
+            val status: MeetingStatus,
             val memberCount: Long,
             val createdAt: String,
             val isCreator: Boolean
@@ -45,15 +51,12 @@ class MeetingDto {
     class UpdateStatus {
         @Schema(description = "모임 상태 변경 요청")
         data class Request(
-            @field:NotBlank(message = "변경할 상태값은 필수입니다")
             @Schema(
                 description = "변경할 상태",
                 example = "ENDED",
-                allowableValues = ["ACTIVE", "ENDED", "DELETED"],
-                type = "string",
-                required = true
+                implementation = MeetingStatus::class
             )
-            val status: String
+            val status: MeetingStatus
         )
     }
 }
