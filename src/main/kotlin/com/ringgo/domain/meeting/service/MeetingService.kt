@@ -52,7 +52,7 @@ class MeetingService(
                     id = meeting.id,
                     name = meeting.name,
                     icon = meeting.icon,
-                    status = meeting.status.name,
+                    status = meeting.status,
                     memberCount = meeting.memberCount,
                     createdAt = meeting.createdAt.format(DateTimeFormatter.ISO_DATE_TIME),
                     isCreator = meeting.creator.id == user.id
@@ -75,15 +75,9 @@ class MeetingService(
         }
 
         // 3. 상태 변경 시도
-        try {
-            val newStatus = MeetingStatus.valueOf(request.status.uppercase())
-            // 4. 상태 전이 규칙 검증
-            if (!meeting.status.canTransitionTo(newStatus)) {
-                throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
-            }
-            meeting.updateStatus(newStatus)
-        } catch (e: IllegalArgumentException) {
-            throw BusinessException(ErrorCode.INVALID_MEETING_STATUS)
+        if (!meeting.status.canTransitionTo(request.status)) {
+            throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
         }
+        meeting.updateStatus(request.status)
     }
 }
