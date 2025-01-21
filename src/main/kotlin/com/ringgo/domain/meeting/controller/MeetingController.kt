@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
 @RestController
@@ -44,4 +45,22 @@ class MeetingController(
     @GetMapping
     fun getMyMeeting(@AuthenticationPrincipal user: User) =
         meetingService.getMyMeeting(user)
+
+    @Operation(summary = "모임 상태 변경", description = "모임의 상태를 변경합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "상태 변경 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "403", description = "권한 없음")
+        ]
+    )
+    @PatchMapping("/{id}/status")
+    fun updateStatus(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: MeetingDto.UpdateStatus.Request,
+        @AuthenticationPrincipal user: User
+    ) {
+        meetingService.updateStatus(id, request, user)
+    }
+
 }

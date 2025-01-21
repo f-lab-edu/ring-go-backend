@@ -3,11 +3,15 @@ package com.ringgo.domain.user.entity
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.user.entity.enums.UserRole
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import java.util.*
 
 @Entity
 @Table(name = "user")
+@EntityListeners(AuditingEntityListener::class)
 class User(
     @Id
     @Column(columnDefinition = "BINARY(16)")
@@ -28,13 +32,15 @@ class User(
 
     @Column(name = "provider_id", nullable = false)
     val providerId: String,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
     @OneToMany(mappedBy = "user")
     val members: MutableList<Member> = mutableListOf()
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    lateinit var createdAt: LocalDateTime
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    lateinit var updatedAt: LocalDateTime
 }

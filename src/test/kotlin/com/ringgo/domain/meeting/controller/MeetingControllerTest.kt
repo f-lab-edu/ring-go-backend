@@ -144,4 +144,31 @@ class MeetingControllerTest {
             verify(exactly = 1) { meetingService.getMyMeeting(any()) }
         }
     }
+
+
+    @Nested
+    @DisplayName("모임 상태 변경 API")
+    inner class UpdateMeetingStatus {
+        private val request = MeetingDto.UpdateStatus.Request(status = "ENDED")
+
+        @Test
+        fun `모임 상태 변경 성공시 200을 응답한다`() {
+            // given
+            val expectedResponse = CommonResponse.success(Unit, "모임 상태가 성공적으로 변경되었습니다.")
+
+            every { meetingService.updateStatus(testUser.id, request, any()) } returns Unit
+
+            // when & then
+            mockMvc.perform(
+                patch("/api/v1/meeting/{id}/status", testUser.id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { meetingService.updateStatus(testUser.id, request, any()) }
+        }
+    }
 }

@@ -1,17 +1,24 @@
 package com.ringgo.domain.meeting.entity
 
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import java.util.*
 
 @Entity
 @Table(name = "meeting")
+@EntityListeners(AuditingEntityListener::class)
 class Meeting(
     @Id
     @Column(columnDefinition = "BINARY(16)")
-    val id: UUID = UUID.randomUUID(),  // AUTO_INCREMENT 대신 UUID 사용
+    val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, length = 50)
     var name: String,
@@ -26,12 +33,19 @@ class Meeting(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     val creator: User,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
+    private val log = KotlinLogging.logger {}
 
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    lateinit var createdAt: LocalDateTime
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    lateinit var updatedAt: LocalDateTime
+
+    fun updateStatus(newStatus: MeetingStatus) {
+        status.validateTransitionTo(newStatus)
+        this.status = newStatus
+    }
 }

@@ -1,9 +1,15 @@
 package com.ringgo.domain.member.entity
 
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.member.entity.enums.MemberRole
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import java.util.*
 
@@ -17,6 +23,7 @@ import java.util.*
         )
     ]
 )
+@EntityListeners(AuditingEntityListener::class)
 class Member(
     @Id
     @Column(columnDefinition = "BINARY(16)")
@@ -36,10 +43,21 @@ class Member(
 
     @Column(nullable = false)
     val joinedAt: LocalDateTime = LocalDateTime.now(),
+) {
+    private val log = KotlinLogging.logger {}
 
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    lateinit var createdAt: LocalDateTime
 
+    @LastModifiedDate
     @Column(nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now()
-)
+    lateinit var updatedAt: LocalDateTime
+
+    fun validateCreatorRole() {
+        if (role != MemberRole.CREATOR) {
+            log.warn { "User is not creator - memberId: $id, userId: ${user.id}, userRole: $role" }
+            throw BusinessException(ErrorCode.NOT_MEETING_CREATOR)
+        }
+    }
+}
