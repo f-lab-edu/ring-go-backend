@@ -19,11 +19,13 @@ class MeetingController(
     private val meetingService: MeetingService
 ) {
     @Operation(summary = "모임 생성", description = "새로운 모임을 생성합니다.")
-    @ApiResponses(value = [
-        ApiResponse(responseCode = "201", description = "모임 생성 성공"),
-        ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "201", description = "모임 생성 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+        ]
+    )
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
@@ -32,4 +34,14 @@ class MeetingController(
     ): MeetingDto.Create.Response {
         return meetingService.create(request, user)
     }
+
+    @Operation(summary = "모임 목록 조회", description = "사용자가 가입한 모든 모임 목록을 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "모임 목록 조회 성공")
+        ]
+    )
+    @GetMapping
+    fun getMyMeeting(@AuthenticationPrincipal user: User) =
+        meetingService.getMyMeeting(user)
 }
