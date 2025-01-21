@@ -45,10 +45,7 @@ class Meeting(
     lateinit var updatedAt: LocalDateTime
 
     fun updateStatus(newStatus: MeetingStatus) {
-        if (!this.status.canTransitionTo(newStatus)) {
-            log.warn { "Invalid status transition - meetingId: $id, currentStatus: $status, requestedStatus: $newStatus" }
-            throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
-        }
+        status.validateTransitionTo(newStatus)
         this.status = newStatus
     }
 }

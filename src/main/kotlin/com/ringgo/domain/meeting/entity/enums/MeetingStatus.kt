@@ -1,13 +1,26 @@
 package com.ringgo.domain.meeting.entity.enums
 
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
+import io.github.oshai.kotlinlogging.KotlinLogging
+
 enum class MeetingStatus {
     ACTIVE, ENDED, DELETED;
 
-    fun canTransitionTo(newStatus: MeetingStatus): Boolean {
-        return when (this) {
+    companion object {
+        private val log = KotlinLogging.logger {}
+    }
+
+    fun validateTransitionTo(newStatus: MeetingStatus) {
+        val isValid = when (this) {
             ACTIVE -> newStatus == ENDED || newStatus == DELETED
-            ENDED -> newStatus == ACTIVE  // 종료 취소의 경우 ACTIVE로 돌아감
-            DELETED -> false  // DELETED 상태에서는 다른 상태로 전환 불가
+            ENDED -> newStatus == ACTIVE
+            DELETED -> false
+        }
+
+        if (!isValid) {
+            log.warn { "Invalid status transition - from: $this, to: $newStatus" }
+            throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
         }
     }
 }
