@@ -35,5 +35,6 @@ jobs:
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=f-lab-edu-1
+            -Dsonar.cpd.exclusions=**/resources/db/**
 
           

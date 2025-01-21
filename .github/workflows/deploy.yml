@@ -62,4 +62,6 @@ jobs:
             -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
             -e SPRING_JPA_SHOW_SQL=true \
             -e LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG \
+            -e SWAGGER_DEV_URL=http://175.45.192.193 \
+            -e SWAGGER_DEV_DESCRIPTION="Development Server" \
             ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
