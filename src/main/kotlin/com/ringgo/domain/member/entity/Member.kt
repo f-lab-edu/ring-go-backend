@@ -44,7 +44,9 @@ class Member(
     @Column(nullable = false)
     val joinedAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    private val log = KotlinLogging.logger {}
+    companion object {
+        private val log = KotlinLogging.logger {}
+    }
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
