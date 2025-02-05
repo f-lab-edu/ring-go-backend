@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class GlobalExceptionHandler {
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val log = KotlinLogging.logger {}
     }
 
     @ExceptionHandler(BusinessException::class)
@@ -21,7 +21,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        logger.error { "handleMethodArgumentNotValidException: $e" }
+        log.error { "handleMethodArgumentNotValidException: $e" }
         val errorResponse = ErrorResponse(
             code = ErrorCode.INVALID_INPUT_VALUE.code,
             message = e.bindingResult.fieldError?.defaultMessage ?: "잘못된 입력값입니다"
@@ -31,7 +31,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-        logger.error { "handleException: $e" }
+        log.error { "handleException: $e" }
         val errorResponse = ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR)
         return ResponseEntity
             .status(ErrorCode.INTERNAL_SERVER_ERROR.status)
