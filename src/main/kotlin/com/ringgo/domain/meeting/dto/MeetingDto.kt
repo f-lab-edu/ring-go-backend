@@ -58,5 +58,33 @@ class MeetingDto {
             )
             val status: MeetingStatus
         )
+
+        @Schema(description = "모임 상태 변경 응답")
+        data class Response(
+            @Schema(description = "모임 ID")
+            val id: UUID,
+
+            @Schema(
+                description = "변경된 상태",
+                example = "ENDED",
+                implementation = MeetingStatus::class
+            )
+            val status: MeetingStatus
+        )
+    }
+
+    @Schema(description = "모임 초대 링크")
+    class InviteLink {
+        @Schema(description = "초대 링크 생성 응답")
+        data class CreateResponse(
+            @Schema(description = "초대 링크 URL")
+            val inviteUrl: String,
+
+            @Schema(
+                description = "만료일시 (ISO 8601 형식)",
+                example = "2024-03-01T12:34:56Z"
+            )
+            val expiredAt: String
+        )
     }
 }

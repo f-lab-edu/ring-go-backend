@@ -23,5 +23,6 @@ enum class ErrorCode(
     // 초대 관련 에러
     INVALID_INVITE_LINK(HttpStatus.BAD_REQUEST, "I001", "유효하지 않은 초대 링크입니다"),
     EXPIRED_INVITE_LINK(HttpStatus.GONE, "I002", "만료된 초대 링크입니다"),
-    ALREADY_MEETING_MEMBER(HttpStatus.BAD_REQUEST, "I003", "이미 모임에 가입된 멤버입니다")
+    ALREADY_MEETING_MEMBER(HttpStatus.BAD_REQUEST, "I003", "이미 모임에 가입된 멤버입니다"),
+    CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "I004","초대 코드 생성에 실패했습니다"),
 }

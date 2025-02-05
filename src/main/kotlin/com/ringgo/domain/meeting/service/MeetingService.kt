@@ -61,7 +61,7 @@ class MeetingService(
     }
 
     @Transactional
-    fun updateStatus(id: UUID, request: MeetingDto.UpdateStatus.Request, user: User) {
+    fun updateStatus(id: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
         val meeting = meetingRepository.findByIdOrNull(id)
             ?: throw BusinessException(ErrorCode.MEETING_NOT_FOUND)
 
@@ -74,5 +74,11 @@ class MeetingService(
 
         // 3. 상태 변경 시도
         meeting.updateStatus(request.status)
+
+        // 4. Response 반환
+        return MeetingDto.UpdateStatus.Response(
+            id = meeting.id,
+            status = meeting.status
+        )
     }
 }

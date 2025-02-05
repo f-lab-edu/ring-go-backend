@@ -1,6 +1,7 @@
 package com.ringgo.domain.meeting.controller
 
 import com.ringgo.domain.meeting.dto.MeetingDto
+import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
@@ -17,7 +18,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/meeting")
 class MeetingController(
-    private val meetingService: MeetingService
+    private val meetingService: MeetingService,
+    private val meetingInviteService: MeetingInviteService,
 ) {
     @Operation(summary = "모임 생성", description = "새로운 모임을 생성합니다.")
     @ApiResponses(
@@ -63,4 +65,17 @@ class MeetingController(
         meetingService.updateStatus(id, request, user)
     }
 
+    @Operation(summary = "모임 초대 링크 생성", description = "모임의 초대 링크를 생성합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "201", description = "초대 링크 생성 성공"),
+            ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음")
+        ]
+    )
+    @PostMapping("/{id}/invite")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createInviteLink(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal user: User
+    ): MeetingDto.InviteLink.CreateResponse = meetingInviteService.createInviteLink(id, user)
 }
