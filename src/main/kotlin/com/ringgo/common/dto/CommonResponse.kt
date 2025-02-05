@@ -1,12 +1,19 @@
 package com.ringgo.common.dto
 
-data class CommonResponse(
-    val status: Int,
-    val message: String
-) {
+sealed class CommonResponse<T> {
+    data class Success<T>(
+        val data: T
+    ) : CommonResponse<T>()
+
+    data class Error(
+        val status: Int,
+        val message: String
+    ) : CommonResponse<Nothing>()
+
     companion object {
-        fun error(status: Int, message: String): CommonResponse {
-            return CommonResponse(status, message)
-        }
+        fun <T> success(data: T): CommonResponse<T> = Success(data)
+
+        fun error(status: Int, message: String): CommonResponse<Nothing> =
+            Error(status, message)
     }
 }
