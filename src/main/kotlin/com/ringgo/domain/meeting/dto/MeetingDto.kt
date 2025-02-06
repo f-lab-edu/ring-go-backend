@@ -86,5 +86,14 @@ class MeetingDto {
             )
             val expiredAt: String
         )
+
+        @Schema(description = "초대 링크 참여 응답")
+        data class JoinResponse(
+            @Schema(description = "모임 ID")
+            val meetingId: UUID,
+
+            @Schema(description = "모임 이름")
+            val meetingName: String
+        )
     }
 }
