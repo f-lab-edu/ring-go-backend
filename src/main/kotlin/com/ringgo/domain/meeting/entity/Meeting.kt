@@ -7,6 +7,7 @@ import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 
@@ -38,11 +39,11 @@ class Meeting(
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    lateinit var createdAt: LocalDateTime
+    lateinit var createdAt: Instant
 
     @LastModifiedDate
     @Column(nullable = false)
-    lateinit var updatedAt: LocalDateTime
+    lateinit var updatedAt: Instant
 
     fun updateStatus(newStatus: MeetingStatus) {
         status.validateTransitionTo(newStatus)
