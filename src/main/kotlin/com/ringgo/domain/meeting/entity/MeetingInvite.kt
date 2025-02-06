@@ -36,7 +36,6 @@ class MeetingInvite(
 ) {
     companion object {
         private const val CODE_LENGTH = 15
-        private const val MAX_RETRIES = 3
 
         fun create(
             meeting: Meeting,
@@ -62,10 +61,11 @@ class MeetingInvite(
         }
 
         private fun generateBaseCode() =
-            UUID.randomUUID().toString().replace("-", "").take(CODE_LENGTH)
+            (UUID.randomUUID().toString() + System.nanoTime())
+                .replace("-", "")
+                .take(CODE_LENGTH)
 
         private fun generateUniqueCode(base: String, attempt: Int = 0): String {
-            if (attempt > MAX_RETRIES) throw BusinessException(ErrorCode.CODE_GENERATION_FAILED)
             val suffix = if (attempt > 0) attempt.toString() else ""
             return base.take(CODE_LENGTH - suffix.length) + suffix
         }

@@ -1,14 +1,16 @@
 package com.ringgo.domain.meeting.config
 
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "app.meeting.invite")
 data class MeetingInviteConfig(
     val baseUrl: String,
-    var expirationDays: Long = 7,
-    var maxRetries: Int = 3
+    var inviteExpirationDays: Long = 3,
+    var maxMembers: Int = 5,
 ) {
     init {
-        require(baseUrl.isNotBlank()) { "app.meeting.invite.base-url must be configured" }
+        if (baseUrl.isBlank()) throw BusinessException(ErrorCode.INVALID_BASE_URL)
     }
 }
