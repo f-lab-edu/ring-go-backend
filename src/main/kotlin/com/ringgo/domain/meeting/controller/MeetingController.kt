@@ -99,4 +99,20 @@ class MeetingController(
             meetingName = member.meeting.name
         )
     }
+
+    @Operation(summary = "모임원 목록 조회", description = "특정 모임의 모든 모임원 목록을 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "모임원 목록 조회 성공"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음")
+        ]
+    )
+    @GetMapping("/{id}/members")
+    fun getMembers(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal user: User
+    ): List<MeetingDto.Member.Response> {
+        return meetingService.getMembers(id, user)
+    }
 }

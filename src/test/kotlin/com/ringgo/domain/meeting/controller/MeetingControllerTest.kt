@@ -2,7 +2,7 @@ package com.ringgo.domain.meeting.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.common.fixture.TestUser
 import com.ringgo.domain.meeting.dto.MeetingDto
@@ -221,7 +221,7 @@ class MeetingControllerTest {
                         meetingId,
                         any()
                     )
-                } throws BusinessException(ErrorCode.MEETING_NOT_FOUND)
+                } throws ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
                 // when & then
                 mockMvc.perform(
@@ -240,7 +240,7 @@ class MeetingControllerTest {
                         meetingId,
                         any()
                     )
-                } throws BusinessException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
+                } throws ApplicationException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
 
                 // when & then
                 mockMvc.perform(
@@ -294,7 +294,7 @@ class MeetingControllerTest {
                 // given
                 every {
                     meetingInviteService.joinWithInviteCode(any(), any())
-                } throws BusinessException(ErrorCode.EXPIRED_INVITE_LINK)
+                } throws ApplicationException(ErrorCode.EXPIRED_INVITE_LINK)
 
                 // when & then
                 mockMvc.perform(
@@ -310,7 +310,7 @@ class MeetingControllerTest {
                 // given
                 every {
                     meetingInviteService.joinWithInviteCode(any(), any())
-                } throws BusinessException(ErrorCode.ALREADY_JOINED_MEMBER)
+                } throws ApplicationException(ErrorCode.ALREADY_JOINED_MEMBER)
 
                 // when & then
                 mockMvc.perform(
@@ -326,7 +326,7 @@ class MeetingControllerTest {
                 // given
                 every {
                     meetingInviteService.joinWithInviteCode(any(), any())
-                } throws BusinessException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
+                } throws ApplicationException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
 
                 // when & then
                 mockMvc.perform(
@@ -334,6 +334,88 @@ class MeetingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                     .andExpect(status().isBadRequest)
+                    .andDo(print())
+            }
+        }
+
+        @Nested
+        @DisplayName("모임원 목록 조회 API")
+        inner class GetMembers {
+            private val meetingId = UUID.randomUUID()
+
+            @Test
+            fun `모임원 목록 조회 성공시 200을 응답한다`() {
+                // given
+                val expectedResponse = listOf(
+                    MeetingDto.Member.Response(
+                        id = UUID.randomUUID(),
+                        userId = testUser.id,
+                        name = testUser.name,
+                        email = testUser.email,
+                        role = MemberRole.CREATOR.name,
+                        joinedAt = Instant.parse("2025-01-12T10:00:00Z")
+                    )
+                )
+                every { meetingService.getMembers(meetingId, any()) } returns expectedResponse
+
+                // when & then
+                mockMvc.perform(
+                    get("/api/v1/meeting/{id}/members", meetingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                    .andDo(print())
+
+                verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
+            }
+
+            @Test
+            fun `모임원이 없을 경우 빈 리스트를 반환한다`() {
+                // given
+                every { meetingService.getMembers(meetingId, any()) } returns emptyList()
+
+                // when & then
+                mockMvc.perform(
+                    get("/api/v1/meeting/{id}/members", meetingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Response>())))
+                    .andDo(print())
+
+                verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
+            }
+
+            @Test
+            fun `모임의 멤버가 아닌 경우 403을 응답한다`() {
+                // given
+                every {
+                    meetingService.getMembers(meetingId, any())
+                } throws ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+                // when & then
+                mockMvc.perform(
+                    get("/api/v1/meeting/{id}/members", meetingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andExpect(status().isForbidden)
+                    .andDo(print())
+            }
+
+            @Test
+            fun `존재하지 않는 모임을 조회하면 404를 응답한다`() {
+                // given
+                every {
+                    meetingService.getMembers(meetingId, any())
+                } throws ApplicationException(ErrorCode.MEETING_NOT_FOUND)
+
+                // when & then
+                mockMvc.perform(
+                    get("/api/v1/meeting/{id}/members", meetingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andExpect(status().isNotFound)
                     .andDo(print())
             }
         }
