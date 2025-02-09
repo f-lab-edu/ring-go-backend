@@ -4,6 +4,7 @@ import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import java.time.Instant
 import java.util.*
 
 class MeetingDto {
@@ -42,7 +43,7 @@ class MeetingDto {
             )
             val status: MeetingStatus,
             val memberCount: Long,
-            val createdAt: String,
+            val createdAt: Instant,
             val isCreator: Boolean
         )
     }

@@ -50,7 +50,7 @@ class MemberRepositoryImpl(
                 status = meeting.status,
                 memberCount = memberCounts[meeting.id] ?: 0,
                 creator = meeting.creator,
-                createdAt = meeting.createdAt
+                createdAt = meeting.createdAt,
             )
         }
     }
