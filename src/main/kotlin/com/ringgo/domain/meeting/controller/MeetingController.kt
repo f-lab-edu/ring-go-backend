@@ -5,6 +5,7 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
