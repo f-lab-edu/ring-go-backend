@@ -13,6 +13,8 @@ import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
 import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -432,11 +434,7 @@ class MeetingControllerTest {
                 @Test
                 fun `모임원 내보내기 성공시 204를 응답한다`() {
                     // given
-                    val expectedResponse = MeetingDto.KickMember.Response(
-                        memberId = memberId,
-                        meetingId = meetingId
-                    )
-                    every { meetingService.kickMember(meetingId, memberId, any()) } returns expectedResponse
+                    every { meetingService.kickMember(meetingId, memberId, any()) } just runs
 
                     // when & then
                     mockMvc.perform(
