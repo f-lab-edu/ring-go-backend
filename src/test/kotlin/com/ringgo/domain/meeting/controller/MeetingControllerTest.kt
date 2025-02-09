@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.time.Instant
 import java.util.*
 
 @WebMvcTest(MeetingController::class)
@@ -118,7 +119,7 @@ class MeetingControllerTest {
                     icon = "group_icon.png",
                     status = MeetingStatus.ACTIVE,
                     memberCount = 1,
-                    createdAt = "2025-01-12T10:00:00",
+                    createdAt = Instant.parse("2025-01-12T10:00:00Z"),
                     isCreator = true
                 )
             )
