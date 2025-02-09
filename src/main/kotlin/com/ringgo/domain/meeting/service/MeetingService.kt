@@ -54,7 +54,7 @@ class MeetingService(
                     icon = meeting.icon,
                     status = meeting.status,
                     memberCount = meeting.memberCount,
-                    createdAt = meeting.createdAt.format(DateTimeFormatter.ISO_DATE_TIME),
+                    createdAt = meeting.createdAt,
                     isCreator = meeting.creator.id == user.id
                 )
             }
