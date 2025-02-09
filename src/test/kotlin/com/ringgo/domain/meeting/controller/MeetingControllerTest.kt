@@ -2,9 +2,12 @@ package com.ringgo.domain.meeting.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
-import com.ringgo.common.dto.CommonResponse
+import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.common.fixture.TestUser
 import com.ringgo.domain.meeting.dto.MeetingDto
+import com.ringgo.domain.meeting.entity.enums.MeetingStatus
+import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import io.mockk.every
 import io.mockk.verify
@@ -107,7 +110,7 @@ class MeetingControllerTest {
                     id = UUID.fromString("bc106686-d0e5-11ef-97fd-2cf05d34818a"),
                     name = "우리 가좍 소비 모임",
                     icon = "group_icon.png",
-                    status = "ACTIVE",
+                    status = MeetingStatus.ACTIVE,
                     memberCount = 1,
                     createdAt = "2025-01-12T10:00:00",
                     isCreator = true
@@ -149,14 +152,16 @@ class MeetingControllerTest {
     @Nested
     @DisplayName("모임 상태 변경 API")
     inner class UpdateMeetingStatus {
-        private val request = MeetingDto.UpdateStatus.Request(status = "ENDED")
+        private val request = MeetingDto.UpdateStatus.Request(status = MeetingStatus.ENDED)
 
         @Test
         fun `모임 상태 변경 성공시 200을 응답한다`() {
             // given
-            val expectedResponse = CommonResponse.success(Unit, "모임 상태가 성공적으로 변경되었습니다.")
-
-            every { meetingService.updateStatus(testUser.id, request, any()) } returns Unit
+            val expectedResponse = MeetingDto.UpdateStatus.Response(
+                id = testUser.id,
+                status = MeetingStatus.ENDED
+            )
+            every { meetingService.updateStatus(testUser.id, request, any()) } returns expectedResponse
 
             // when & then
             mockMvc.perform(
@@ -171,4 +176,73 @@ class MeetingControllerTest {
             verify(exactly = 1) { meetingService.updateStatus(testUser.id, request, any()) }
         }
     }
+
+    @Nested
+    @DisplayName("초대 링크 생성 API")
+    inner class CreateInviteLink {
+        private val meetingId = UUID.randomUUID()
+
+        @MockkBean
+        private lateinit var meetingInviteService: MeetingInviteService
+
+        @Test
+        fun `초대 링크 생성 성공시 201을 응답한다`() {
+            // given
+            val expectedResponse = MeetingDto.InviteLink.CreateResponse(
+                inviteUrl = "http://localhost:8080/invite/test-code",
+                expiredAt = "2025-02-09T10:00:00"
+            )
+            every { meetingInviteService.createInviteLink(meetingId, any()) } returns expectedResponse
+
+            // when & then
+            mockMvc.perform(
+                post("/api/v1/meeting/{id}/invite", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isCreated)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { meetingInviteService.createInviteLink(meetingId, any()) }
+        }
+
+        @Test
+        fun `존재하지 않는 모임의 초대 링크를 생성하면 404를 응답한다`() {
+            // given
+            every {
+                meetingInviteService.createInviteLink(
+                    meetingId,
+                    any()
+                )
+            } throws BusinessException(ErrorCode.MEETING_NOT_FOUND)
+
+            // when & then
+            mockMvc.perform(
+                post("/api/v1/meeting/{id}/invite", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isNotFound)
+                .andDo(print())
+        }
+
+        @Test
+        fun `모임 멤버 수가 초과되면 400을 응답한다`() {
+            // given
+            every {
+                meetingInviteService.createInviteLink(
+                    meetingId,
+                    any()
+                )
+            } throws BusinessException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
+
+            // when & then
+            mockMvc.perform(
+                post("/api/v1/meeting/{id}/invite", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isBadRequest)
+                .andDo(print())
+        }
+    }
+
 }

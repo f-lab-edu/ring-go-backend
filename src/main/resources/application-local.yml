@@ -43,6 +43,11 @@ spring:
       host: localhost
       port: 6379
 
+app:
+  meeting:
+    invite:
+      base-url: "http://localhost:8080"
+
 swagger:
   local:
     url: http://localhost:8080
