@@ -14,8 +14,8 @@ class GlobalExceptionHandler {
         private val log = KotlinLogging.logger {}
     }
 
-    @ExceptionHandler(BusinessException::class)
-    fun handleBusinessException(e: BusinessException) = ResponseEntity
+    @ExceptionHandler(ApplicationException::class)
+    fun handleApplicationException(e: ApplicationException) = ResponseEntity
         .status(e.errorCode.status)
         .body(CommonResponse.error(e.errorCode.status.value(), e.errorCode.message))
 
