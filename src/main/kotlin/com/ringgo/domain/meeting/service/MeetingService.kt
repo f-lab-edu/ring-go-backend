@@ -103,7 +103,7 @@ class MeetingService(
     }
 
     @Transactional
-    fun kickMember(meetingId: UUID, memberId: UUID, user: User) {
+    fun kickMember(meetingId: UUID, memberId: UUID, request: MeetingDto.KickMember.Request, user: User): MeetingDto.KickMember.Response {
         // 1. 요청자의 멤버십 확인 및 권한 검증
         val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
@@ -125,6 +125,11 @@ class MeetingService(
         }
 
         // 5. 모임원 삭제
-        memberRepository.delete(targetMember)
+        targetMember.updateStatus(request.status)
+
+        return MeetingDto.KickMember.Response(
+            id = targetMember.id,
+            status = targetMember.status
+        )
     }
 }

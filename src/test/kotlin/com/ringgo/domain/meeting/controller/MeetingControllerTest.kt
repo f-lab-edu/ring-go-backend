@@ -12,6 +12,7 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -432,32 +433,38 @@ class MeetingControllerTest {
                 private val memberId = UUID.randomUUID()
 
                 @Test
-                fun `모임원 내보내기 성공시 204를 응답한다`() {
+                fun `모임원 내보내기 성공시 200을 응답한다`() {
                     // given
-                    every { meetingService.kickMember(meetingId, memberId, any()) } just runs
+                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
+                    val expectedResponse = MeetingDto.KickMember.Response(id = memberId, status = MemberStatus.KICKED)
+                    every { meetingService.kickMember(meetingId, memberId, request, any()) } returns expectedResponse
 
                     // when & then
                     mockMvc.perform(
-                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
                     )
-                        .andExpect(status().isNoContent)
+                        .andExpect(status().isOk)
+                        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
                         .andDo(print())
 
-                    verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, any()) }
+                    verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, request, any()) }
                 }
 
                 @Test
                 fun `모임의 생성자가 아닌 경우 403을 응답한다`() {
                     // given
+                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, any())
+                        meetingService.kickMember(meetingId, memberId, request, any())
                     } throws ApplicationException(ErrorCode.NOT_MEETING_CREATOR)
 
                     // when & then
                     mockMvc.perform(
-                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isForbidden)
                         .andDo(print())
@@ -466,14 +473,16 @@ class MeetingControllerTest {
                 @Test
                 fun `자기 자신을 내보내려고 하면 400을 응답한다`() {
                     // given
+                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, any())
+                        meetingService.kickMember(meetingId, memberId, request, any())
                     } throws ApplicationException(ErrorCode.CANNOT_KICK_SELF)
 
                     // when & then
                     mockMvc.perform(
-                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isBadRequest)
                         .andDo(print())
@@ -482,14 +491,16 @@ class MeetingControllerTest {
                 @Test
                 fun `모임에 속하지 않은 멤버를 내보내려고 하면 404를 응답한다`() {
                     // given
+                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, any())
+                        meetingService.kickMember(meetingId, memberId, request, any())
                     } throws ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
 
                     // when & then
                     mockMvc.perform(
-                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isNotFound)
                         .andDo(print())
