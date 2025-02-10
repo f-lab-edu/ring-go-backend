@@ -1,6 +1,6 @@
 package com.ringgo.domain.meeting.entity.enums
 
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -20,7 +20,7 @@ enum class MeetingStatus {
 
         if (!isValid) {
             log.warn { "Invalid status transition - from: $this, to: $newStatus" }
-            throw BusinessException(ErrorCode.INVALID_STATUS_TRANSITION)
+            throw ApplicationException(ErrorCode.INVALID_STATUS_TRANSITION)
         }
     }
 }

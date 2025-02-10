@@ -1,6 +1,6 @@
 package com.ringgo.domain.meeting.service
 
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.entity.Meeting
@@ -13,7 +13,6 @@ import com.ringgo.domain.member.repository.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Service
@@ -63,11 +62,11 @@ class MeetingService(
     @Transactional
     fun updateStatus(id: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
         val meeting = meetingRepository.findByIdOrNull(id)
-            ?: throw BusinessException(ErrorCode.MEETING_NOT_FOUND)
+            ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
         // 1. 멤버 여부 확인
         val member = memberRepository.findByMeetingIdAndUserId(id, user.id)
-            ?: throw BusinessException(ErrorCode.NOT_MEETING_MEMBER)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
         // 2. CREATOR 역할 확인
         member.validateCreatorRole()
@@ -80,5 +79,25 @@ class MeetingService(
             id = meeting.id,
             status = meeting.status
         )
+    }
+
+    fun getMembers(meetingId: UUID, user: User): List<MeetingDto.Member.Response> {
+        // 1. 사용자가 해당 모임의 멤버인지 확인
+        if (!memberRepository.existsByMeetingIdAndUserId(meetingId, user.id)) {
+            throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+        }
+
+        // 2. 모임원 목록 조회
+        return memberRepository.findByMeetingIdOrderByJoinedAtAsc(meetingId)
+            .map { member ->
+                MeetingDto.Member.Response(
+                    id = member.id,
+                    userId = member.user.id,
+                    name = member.user.name,
+                    email = member.user.email,
+                    role = member.role.name,
+                    joinedAt = member.joinedAt,
+                )
+            }
     }
 }

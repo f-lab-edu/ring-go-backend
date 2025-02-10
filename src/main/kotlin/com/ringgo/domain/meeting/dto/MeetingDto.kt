@@ -97,4 +97,28 @@ class MeetingDto {
             val meetingName: String
         )
     }
+
+    @Schema(description = "모임원 목록 조회")
+    class Member {
+        @Schema(description = "모임원 목록 조회 응답")
+        data class Response(
+            @Schema(description = "모임원 ID")
+            val id: UUID,
+
+            @Schema(description = "사용자 ID")
+            val userId: UUID,
+
+            @Schema(description = "사용자 이름")
+            val name: String,
+
+            @Schema(description = "사용자 이메일")
+            val email: String,
+
+            @Schema(description = "모임원 역할")
+            val role: String,
+
+            @Schema(description = "가입일시")
+            val joinedAt: Instant,
+        )
+    }
 }

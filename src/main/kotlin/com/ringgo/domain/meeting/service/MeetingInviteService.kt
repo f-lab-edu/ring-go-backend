@@ -1,6 +1,6 @@
 package com.ringgo.domain.meeting.service
 
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.config.MeetingInviteConfig
 import com.ringgo.domain.meeting.dto.MeetingDto
@@ -30,7 +30,7 @@ class MeetingInviteService(
     @Transactional
     fun createInviteLink(id: UUID, user: User): MeetingDto.InviteLink.CreateResponse {
         val meeting = meetingRepository.findByIdOrNull(id)
-            ?: throw BusinessException(ErrorCode.MEETING_NOT_FOUND)
+            ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
         val invite = meetingInviteRepository.save(
             MeetingInvite.create(
@@ -50,7 +50,7 @@ class MeetingInviteService(
     @Transactional
     fun joinWithInviteCode(code: String, user: User): Member {
         val invite = meetingInviteRepository.findByCode(code)
-            ?: throw BusinessException(ErrorCode.INVALID_INVITE_LINK)
+            ?: throw ApplicationException(ErrorCode.INVALID_INVITE_LINK)
 
         validateInviteValidity(invite)
         checkExistingMembership(invite.meeting, user)
@@ -68,23 +68,23 @@ class MeetingInviteService(
     private fun validateInviteValidity(invite: MeetingInvite) {
         when {
             Instant.now().isAfter(invite.expiredAt) ->
-                throw BusinessException(ErrorCode.EXPIRED_INVITE_LINK)
+                throw ApplicationException(ErrorCode.EXPIRED_INVITE_LINK)
 
             invite.meeting.status != MeetingStatus.ACTIVE ->
-                throw BusinessException(ErrorCode.INACTIVE_MEETING)
+                throw ApplicationException(ErrorCode.INACTIVE_MEETING)
         }
     }
 
     private fun checkExistingMembership(meeting: Meeting, user: User) {
         if (memberRepository.existsByMeetingIdAndUserId(meeting.id, user.id)) {
-            throw BusinessException(ErrorCode.ALREADY_JOINED_MEMBER)
+            throw ApplicationException(ErrorCode.ALREADY_JOINED_MEMBER)
         }
     }
 
     private fun checkMemberLimit(meeting: Meeting) {
         val memberCount = memberRepository.countByMeetingId(meeting.id)
         if (memberCount >= meetingInviteConfig.maxMembers) {
-            throw BusinessException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
+            throw ApplicationException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
         }
     }
 }

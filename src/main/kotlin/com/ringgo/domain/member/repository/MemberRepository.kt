@@ -8,4 +8,5 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberRepositoryCustom
     fun findByMeetingIdAndUserId(meetingId: UUID, userId: UUID): Member?
     fun countByMeetingId(meetingId: UUID): Long
     fun existsByMeetingIdAndUserId(meetingId: UUID, userId: UUID): Boolean
+    fun findByMeetingIdOrderByJoinedAtAsc(meetingId: UUID): List<Member>
 }
