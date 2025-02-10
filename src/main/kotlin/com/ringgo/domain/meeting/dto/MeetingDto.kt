@@ -125,16 +125,6 @@ class MeetingDto {
 
     @Schema(description = "모임원 내보내기")
     class KickMember {
-        @Schema(description = "모임원 내보내기 요청")
-        data class Request(
-            @Schema(
-                description = "변경할 상태",
-                example = "KICKED",
-                implementation = MemberStatus::class
-            )
-            val status: MemberStatus
-        )
-
         @Schema(description = "모임원 내보내기 응답")
         data class Response(
             @Schema(description = "모임원 ID")

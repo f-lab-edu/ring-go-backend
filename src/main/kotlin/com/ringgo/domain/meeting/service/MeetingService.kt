@@ -8,6 +8,7 @@ import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.meeting.repository.MeetingRepository
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import com.ringgo.domain.user.entity.User
 import com.ringgo.domain.member.repository.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -103,7 +104,7 @@ class MeetingService(
     }
 
     @Transactional
-    fun kickMember(meetingId: UUID, memberId: UUID, request: MeetingDto.KickMember.Request, user: User): MeetingDto.KickMember.Response {
+    fun kickMember(meetingId: UUID, memberId: UUID, user: User): MeetingDto.KickMember.Response {
         // 1. 요청자의 멤버십 확인 및 권한 검증
         val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
@@ -125,7 +126,7 @@ class MeetingService(
         }
 
         // 5. 모임원 삭제
-        targetMember.updateStatus(request.status)
+        targetMember.updateStatus(MemberStatus.KICKED)
 
         return MeetingDto.KickMember.Response(
             id = targetMember.id,

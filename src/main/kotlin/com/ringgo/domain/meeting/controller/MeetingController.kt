@@ -133,9 +133,8 @@ class MeetingController(
     fun kickMember(
         @PathVariable meetingId: UUID,
         @PathVariable memberId: UUID,
-        @Valid @RequestBody request: MeetingDto.KickMember.Request,
         @AuthenticationPrincipal user: User
     ): MeetingDto.KickMember.Response {
-        return meetingService.kickMember(meetingId, memberId, request, user)
+        return meetingService.kickMember(meetingId, memberId, user)
     }
 }
