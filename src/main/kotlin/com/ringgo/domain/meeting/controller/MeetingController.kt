@@ -61,8 +61,8 @@ class MeetingController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MeetingDto.UpdateStatus.Request,
         @AuthenticationPrincipal user: User
-    ) {
-        meetingService.updateStatus(id, request, user)
+    ): MeetingDto.UpdateStatus.Response {
+        return meetingService.updateStatus(id, request, user)
     }
 
     @Operation(summary = "모임 초대 링크 생성", description = "모임의 초대 링크를 생성합니다.")
@@ -78,4 +78,25 @@ class MeetingController(
         @PathVariable id: UUID,
         @AuthenticationPrincipal user: User
     ): MeetingDto.InviteLink.CreateResponse = meetingInviteService.createInviteLink(id, user)
+
+    @Operation(summary = "초대 코드로 모임 참여", description = "초대 코드를 사용하여 모임에 참여합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "모임 참여 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "404", description = "유효하지 않은 초대 코드"),
+            ApiResponse(responseCode = "409", description = "이미 가입된 멤버")
+        ]
+    )
+    @PostMapping("/invite/{code}")
+    fun joinMeeting(
+        @PathVariable code: String,
+        @AuthenticationPrincipal user: User
+    ): MeetingDto.InviteLink.JoinResponse {
+        val member = meetingInviteService.joinWithInviteCode(code, user)
+        return MeetingDto.InviteLink.JoinResponse(
+            meetingId = member.meeting.id,
+            meetingName = member.meeting.name
+        )
+    }
 }
