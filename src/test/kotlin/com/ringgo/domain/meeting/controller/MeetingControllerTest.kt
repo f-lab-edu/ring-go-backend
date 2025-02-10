@@ -435,36 +435,35 @@ class MeetingControllerTest {
                 @Test
                 fun `모임원 내보내기 성공시 200을 응답한다`() {
                     // given
-                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
-                    val expectedResponse = MeetingDto.KickMember.Response(id = memberId, status = MemberStatus.KICKED)
-                    every { meetingService.kickMember(meetingId, memberId, request, any()) } returns expectedResponse
+                    val expectedResponse = MeetingDto.KickMember.Response(
+                        id = memberId,
+                        status = MemberStatus.KICKED
+                    )
+                    every { meetingService.kickMember(meetingId, memberId, any()) } returns expectedResponse
 
                     // when & then
                     mockMvc.perform(
                         patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isOk)
                         .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
                         .andDo(print())
 
-                    verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, request, any()) }
+                    verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, any()) }
                 }
 
                 @Test
                 fun `모임의 생성자가 아닌 경우 403을 응답한다`() {
                     // given
-                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, request, any())
+                        meetingService.kickMember(meetingId, memberId, any())
                     } throws ApplicationException(ErrorCode.NOT_MEETING_CREATOR)
 
                     // when & then
                     mockMvc.perform(
                         patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isForbidden)
                         .andDo(print())
@@ -473,16 +472,14 @@ class MeetingControllerTest {
                 @Test
                 fun `자기 자신을 내보내려고 하면 400을 응답한다`() {
                     // given
-                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, request, any())
+                        meetingService.kickMember(meetingId, memberId, any())
                     } throws ApplicationException(ErrorCode.CANNOT_KICK_SELF)
 
                     // when & then
                     mockMvc.perform(
                         patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isBadRequest)
                         .andDo(print())
@@ -491,16 +488,14 @@ class MeetingControllerTest {
                 @Test
                 fun `모임에 속하지 않은 멤버를 내보내려고 하면 404를 응답한다`() {
                     // given
-                    val request = MeetingDto.KickMember.Request(status = MemberStatus.KICKED)
                     every {
-                        meetingService.kickMember(meetingId, memberId, request, any())
+                        meetingService.kickMember(meetingId, memberId, any())
                     } throws ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
 
                     // when & then
                     mockMvc.perform(
                         patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request))
                     )
                         .andExpect(status().isNotFound)
                         .andDo(print())
