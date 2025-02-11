@@ -14,8 +14,6 @@ import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
 import com.ringgo.domain.member.entity.enums.MemberStatus
 import io.mockk.every
-import io.mockk.just
-import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,7 +25,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.Instant
 import java.util.*
 
@@ -198,7 +197,7 @@ class MeetingControllerTest {
             @Test
             fun `초대 링크 생성 성공시 201을 응답한다`() {
                 // given
-                val expectedResponse = MeetingDto.InviteLink.CreateResponse(
+                val expectedResponse = MeetingDto.Invite.Create.Response(
                     inviteUrl = "http://localhost:8080/invite/test-code",
                     expiredAt = "2025-02-09T10:00:00"
                 )
@@ -262,7 +261,7 @@ class MeetingControllerTest {
             @Test
             fun `모임 참여 성공시 200을 응답한다`() {
                 // given
-                val expectedResponse = MeetingDto.InviteLink.JoinResponse(
+                val expectedResponse = MeetingDto.Invite.Join.Response(
                     meetingId = UUID.randomUUID(),
                     meetingName = "우리 가좍 소비 모임"
                 )
@@ -353,7 +352,7 @@ class MeetingControllerTest {
                 fun `모임원 목록 조회 성공시 200을 응답한다`() {
                     // given
                     val expectedResponse = listOf(
-                        MeetingDto.Member.Response(
+                        MeetingDto.Member.Get.Response(
                             id = UUID.randomUUID(),
                             userId = testUser.id,
                             name = testUser.name,
@@ -387,7 +386,7 @@ class MeetingControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isOk)
-                        .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Response>())))
+                        .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Get.Response>())))
                         .andDo(print())
 
                     verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
@@ -435,7 +434,7 @@ class MeetingControllerTest {
                 @Test
                 fun `모임원 내보내기 성공시 200을 응답한다`() {
                     // given
-                    val expectedResponse = MeetingDto.KickMember.Response(
+                    val expectedResponse = MeetingDto.Member.Kick.Response(
                         id = memberId,
                         status = MemberStatus.KICKED
                     )

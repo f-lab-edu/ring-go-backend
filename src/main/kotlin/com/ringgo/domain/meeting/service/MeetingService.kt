@@ -5,17 +5,16 @@ import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
-import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.meeting.repository.MeetingRepository
+import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
 import com.ringgo.domain.member.entity.enums.MemberStatus
-import com.ringgo.domain.user.entity.User
 import com.ringgo.domain.member.repository.MemberRepository
+import com.ringgo.domain.user.entity.User
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.format.DateTimeFormatter
-import java.util.UUID
+import java.util.*
 
 @Service
 @Transactional(readOnly = true)
@@ -83,7 +82,7 @@ class MeetingService(
         )
     }
 
-    fun getMembers(meetingId: UUID, user: User): List<MeetingDto.Member.Response> {
+    fun getMembers(meetingId: UUID, user: User): List<MeetingDto.Member.Get.Response> {
         // 1. 사용자가 해당 모임의 멤버인지 확인
         if (!memberRepository.existsByMeetingIdAndUserId(meetingId, user.id)) {
             throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
@@ -92,7 +91,7 @@ class MeetingService(
         // 2. 모임원 목록 조회
         return memberRepository.findByMeetingIdOrderByJoinedAtAsc(meetingId)
             .map { member ->
-                MeetingDto.Member.Response(
+                MeetingDto.Member.Get.Response(
                     id = member.id,
                     userId = member.user.id,
                     name = member.user.name,
@@ -104,7 +103,7 @@ class MeetingService(
     }
 
     @Transactional
-    fun kickMember(meetingId: UUID, memberId: UUID, user: User): MeetingDto.KickMember.Response {
+    fun kickMember(meetingId: UUID, memberId: UUID, user: User): MeetingDto.Member.Kick.Response {
         // 1. 요청자의 멤버십 확인 및 권한 검증
         val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
@@ -128,7 +127,7 @@ class MeetingService(
         // 5. 모임원 삭제
         targetMember.updateStatus(MemberStatus.KICKED)
 
-        return MeetingDto.KickMember.Response(
+        return MeetingDto.Member.Kick.Response(
             id = targetMember.id,
             status = targetMember.status
         )

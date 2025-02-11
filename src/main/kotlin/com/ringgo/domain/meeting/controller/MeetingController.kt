@@ -5,14 +5,13 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
@@ -78,7 +77,7 @@ class MeetingController(
     fun createInviteLink(
         @PathVariable id: UUID,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.InviteLink.CreateResponse = meetingInviteService.createInviteLink(id, user)
+    ): MeetingDto.Invite.Create.Response = meetingInviteService.createInviteLink(id, user)
 
     @Operation(summary = "초대 코드로 모임 참여", description = "초대 코드를 사용하여 모임에 참여합니다.")
     @ApiResponses(
@@ -93,9 +92,9 @@ class MeetingController(
     fun joinMeeting(
         @PathVariable code: String,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.InviteLink.JoinResponse {
+    ): MeetingDto.Invite.Join.Response {
         val member = meetingInviteService.joinWithInviteCode(code, user)
-        return MeetingDto.InviteLink.JoinResponse(
+        return MeetingDto.Invite.Join.Response(
             meetingId = member.meeting.id,
             meetingName = member.meeting.name
         )
@@ -113,7 +112,7 @@ class MeetingController(
     fun getMembers(
         @PathVariable id: UUID,
         @AuthenticationPrincipal user: User
-    ): List<MeetingDto.Member.Response> {
+    ): List<MeetingDto.Member.Get.Response> {
         return meetingService.getMembers(id, user)
     }
 
@@ -134,7 +133,7 @@ class MeetingController(
         @PathVariable meetingId: UUID,
         @PathVariable memberId: UUID,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.KickMember.Response {
+    ): MeetingDto.Member.Kick.Response {
         return meetingService.kickMember(meetingId, memberId, user)
     }
 }
