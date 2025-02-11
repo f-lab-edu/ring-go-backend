@@ -4,6 +4,7 @@ import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.activity.dto.ActivityDto
 import com.ringgo.domain.activity.entity.ExpenseActivity
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.activity.repository.ActivityRepository
 import com.ringgo.domain.meeting.repository.MeetingRepository
 import com.ringgo.domain.member.repository.MemberRepository
@@ -30,17 +31,16 @@ class ActivityService(
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
         // 3. 활동 타입 중복 체크
-        if (activityRepository.existsByMeetingIdAndType(meeting.id, request.type.uppercase())) {
+        if (activityRepository.existsByMeetingIdAndType(meeting.id, request.type)) {
             throw ApplicationException(ErrorCode.DUPLICATE_ACTIVITY_TYPE)
         }
 
         // 4. 활동 생성
-        val activity = when(request.type.uppercase()) {
-            "EXPENSE" -> ExpenseActivity.create(
+        val activity = when(request.type) {
+            ActivityType.EXPENSE -> ExpenseActivity.create(
                 meeting = meeting,
                 creator = user
             )
-            else -> throw ApplicationException(ErrorCode.INVALID_ACTIVITY_TYPE)
         }
 
         val savedActivity = activityRepository.save(activity)

@@ -1,5 +1,6 @@
 package com.ringgo.domain.activity.entity
 
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
@@ -23,7 +24,8 @@ abstract class Activity(
     val creator: User,
 
     @Column(name = "type", insertable = false, updatable = false)
-    val type: String,
+    @Enumerated(EnumType.STRING)
+    val type: ActivityType,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

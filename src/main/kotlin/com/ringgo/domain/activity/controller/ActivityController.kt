@@ -1,6 +1,7 @@
 package com.ringgo.domain.activity.controller
 
 import com.ringgo.domain.activity.dto.ActivityDto
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.activity.service.ActivityService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
@@ -30,7 +31,7 @@ class ActivityController(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @PathVariable meetingId: UUID,
-        @PathVariable type: String,
+        @PathVariable type: ActivityType,
         @AuthenticationPrincipal user: User
     ): ActivityDto.Create.Response {
         return activityService.create(ActivityDto.Create.Request(meetingId, type), user)

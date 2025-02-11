@@ -1,5 +1,6 @@
 package com.ringgo.domain.activity.entity
 
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.DiscriminatorValue
@@ -13,7 +14,7 @@ class ExpenseActivity(
 ) : Activity(
     meeting = meeting,
     creator = creator,
-    type = "EXPENSE",
+    type = ActivityType.EXPENSE,
 ) {
     companion object {
         fun create(meeting: Meeting, creator: User): ExpenseActivity {

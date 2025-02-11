@@ -6,6 +6,7 @@ import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.common.fixture.TestUser
 import com.ringgo.domain.activity.dto.ActivityDto
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.activity.service.ActivityService
 import io.mockk.every
 import io.mockk.verify
@@ -59,7 +60,7 @@ class ActivityControllerTest {
         private val meetingId = UUID.randomUUID()
         private val request = ActivityDto.Create.Request(
             meetingId = meetingId,
-            type = "EXPENSE"
+            type = ActivityType.EXPENSE,
         )
 
         @Test
@@ -70,7 +71,7 @@ class ActivityControllerTest {
 
             // when & then
             mockMvc.perform(
-                post("/api/v1/activity/$meetingId/EXPENSE")
+                post("/api/v1/activity/$meetingId/${ActivityType.EXPENSE}")
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isCreated)
@@ -87,7 +88,7 @@ class ActivityControllerTest {
 
             // when & then
             mockMvc.perform(
-                post("/api/v1/activity/$meetingId/EXPENSE")
+                post("/api/v1/activity/$meetingId/${ActivityType.EXPENSE}")
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isForbidden)
@@ -97,33 +98,21 @@ class ActivityControllerTest {
         @Test
         fun `이미 동일한 타입의 활동이 존재하는 경우 409를 응답한다`() {
             // given
+            val request = ActivityDto.Create.Request(
+                meetingId = meetingId,
+                type = ActivityType.EXPENSE
+            )
             every { activityService.create(request, any()) } throws ApplicationException(ErrorCode.DUPLICATE_ACTIVITY_TYPE)
 
             // when & then
             mockMvc.perform(
-                post("/api/v1/activity/$meetingId/EXPENSE")
+                post("/api/v1/activity/$meetingId/${ActivityType.EXPENSE}")
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isConflict)
                 .andDo(print())
-        }
 
-        @Test
-        fun `지원하지 않는 활동 타입인 경우 400을 응답한다`() {
-            // given
-            val invalidRequest = ActivityDto.Create.Request(
-                meetingId = meetingId,
-                type = "INVALID_TYPE"
-            )
-            every { activityService.create(invalidRequest, any()) } throws ApplicationException(ErrorCode.INVALID_ACTIVITY_TYPE)
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/activity/$meetingId/INVALID_TYPE")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-                .andExpect(status().isBadRequest)
-                .andDo(print())
+            verify(exactly = 1) { activityService.create(request, any()) }
         }
     }
 }

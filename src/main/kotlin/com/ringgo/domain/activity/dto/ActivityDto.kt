@@ -1,5 +1,6 @@
 package com.ringgo.domain.activity.dto
 
+import com.ringgo.domain.activity.entity.enums.ActivityType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 import java.util.*
@@ -15,11 +16,12 @@ class ActivityDto {
 
             @field:NotNull(message = "활동 유형은 필수입니다")
             @Schema(description = "활동 유형", example = "EXPENDITURE")
-            val type: String
+            val type: ActivityType,
         )
 
-        @Schema(description = "활동 생성 응답")
+        @Schema(description = "활동 생성 응답", name = "ActivityCreateResponse")
         data class Response(
+            @Schema(description = "활동 ID")
             val id: Long
         )
     }
