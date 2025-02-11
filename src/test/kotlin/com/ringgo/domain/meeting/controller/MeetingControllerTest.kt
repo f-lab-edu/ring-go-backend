@@ -12,7 +12,10 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -339,84 +342,159 @@ class MeetingControllerTest {
         }
 
         @Nested
-        @DisplayName("모임원 목록 조회 API")
-        inner class GetMembers {
-            private val meetingId = UUID.randomUUID()
+        @DisplayName("모임원 관련 API")
+        inner class MemberApis {
+            @Nested
+            @DisplayName("모임원 목록 조회 API")
+            inner class GetMembers {
+                private val meetingId = UUID.randomUUID()
 
-            @Test
-            fun `모임원 목록 조회 성공시 200을 응답한다`() {
-                // given
-                val expectedResponse = listOf(
-                    MeetingDto.Member.Response(
-                        id = UUID.randomUUID(),
-                        userId = testUser.id,
-                        name = testUser.name,
-                        email = testUser.email,
-                        role = MemberRole.CREATOR.name,
-                        joinedAt = Instant.parse("2025-01-12T10:00:00Z")
+                @Test
+                fun `모임원 목록 조회 성공시 200을 응답한다`() {
+                    // given
+                    val expectedResponse = listOf(
+                        MeetingDto.Member.Response(
+                            id = UUID.randomUUID(),
+                            userId = testUser.id,
+                            name = testUser.name,
+                            email = testUser.email,
+                            role = MemberRole.CREATOR.name,
+                            joinedAt = Instant.parse("2025-01-12T10:00:00Z")
+                        )
                     )
-                )
-                every { meetingService.getMembers(meetingId, any()) } returns expectedResponse
+                    every { meetingService.getMembers(meetingId, any()) } returns expectedResponse
 
-                // when & then
-                mockMvc.perform(
-                    get("/api/v1/meeting/{id}/members", meetingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                    .andExpect(status().isOk)
-                    .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
-                    .andDo(print())
+                    // when & then
+                    mockMvc.perform(
+                        get("/api/v1/meeting/{id}/members", meetingId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isOk)
+                        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                        .andDo(print())
 
-                verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
+                    verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
+                }
+
+                @Test
+                fun `모임원이 없을 경우 빈 리스트를 반환한다`() {
+                    // given
+                    every { meetingService.getMembers(meetingId, any()) } returns emptyList()
+
+                    // when & then
+                    mockMvc.perform(
+                        get("/api/v1/meeting/{id}/members", meetingId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isOk)
+                        .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Response>())))
+                        .andDo(print())
+
+                    verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
+                }
+
+                @Test
+                fun `모임의 멤버가 아닌 경우 403을 응답한다`() {
+                    // given
+                    every {
+                        meetingService.getMembers(meetingId, any())
+                    } throws ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+                    // when & then
+                    mockMvc.perform(
+                        get("/api/v1/meeting/{id}/members", meetingId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isForbidden)
+                        .andDo(print())
+                }
+
+                @Test
+                fun `존재하지 않는 모임을 조회하면 404를 응답한다`() {
+                    // given
+                    every {
+                        meetingService.getMembers(meetingId, any())
+                    } throws ApplicationException(ErrorCode.MEETING_NOT_FOUND)
+
+                    // when & then
+                    mockMvc.perform(
+                        get("/api/v1/meeting/{id}/members", meetingId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isNotFound)
+                        .andDo(print())
+                }
             }
 
-            @Test
-            fun `모임원이 없을 경우 빈 리스트를 반환한다`() {
-                // given
-                every { meetingService.getMembers(meetingId, any()) } returns emptyList()
+            @Nested
+            @DisplayName("모임원 내보내기 API")
+            inner class KickMember {
+                private val meetingId = UUID.randomUUID()
+                private val memberId = UUID.randomUUID()
 
-                // when & then
-                mockMvc.perform(
-                    get("/api/v1/meeting/{id}/members", meetingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                    .andExpect(status().isOk)
-                    .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Response>())))
-                    .andDo(print())
+                @Test
+                fun `모임원 내보내기 성공시 204를 응답한다`() {
+                    // given
+                    every { meetingService.kickMember(meetingId, memberId, any()) } just runs
 
-                verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
-            }
+                    // when & then
+                    mockMvc.perform(
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isNoContent)
+                        .andDo(print())
 
-            @Test
-            fun `모임의 멤버가 아닌 경우 403을 응답한다`() {
-                // given
-                every {
-                    meetingService.getMembers(meetingId, any())
-                } throws ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+                    verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, any()) }
+                }
 
-                // when & then
-                mockMvc.perform(
-                    get("/api/v1/meeting/{id}/members", meetingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                    .andExpect(status().isForbidden)
-                    .andDo(print())
-            }
+                @Test
+                fun `모임의 생성자가 아닌 경우 403을 응답한다`() {
+                    // given
+                    every {
+                        meetingService.kickMember(meetingId, memberId, any())
+                    } throws ApplicationException(ErrorCode.NOT_MEETING_CREATOR)
 
-            @Test
-            fun `존재하지 않는 모임을 조회하면 404를 응답한다`() {
-                // given
-                every {
-                    meetingService.getMembers(meetingId, any())
-                } throws ApplicationException(ErrorCode.MEETING_NOT_FOUND)
+                    // when & then
+                    mockMvc.perform(
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isForbidden)
+                        .andDo(print())
+                }
 
-                // when & then
-                mockMvc.perform(
-                    get("/api/v1/meeting/{id}/members", meetingId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
-                    .andExpect(status().isNotFound)
-                    .andDo(print())
+                @Test
+                fun `자기 자신을 내보내려고 하면 400을 응답한다`() {
+                    // given
+                    every {
+                        meetingService.kickMember(meetingId, memberId, any())
+                    } throws ApplicationException(ErrorCode.CANNOT_KICK_SELF)
+
+                    // when & then
+                    mockMvc.perform(
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isBadRequest)
+                        .andDo(print())
+                }
+
+                @Test
+                fun `모임에 속하지 않은 멤버를 내보내려고 하면 404를 응답한다`() {
+                    // given
+                    every {
+                        meetingService.kickMember(meetingId, memberId, any())
+                    } throws ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
+
+                    // when & then
+                    mockMvc.perform(
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andExpect(status().isNotFound)
+                        .andDo(print())
+                }
             }
         }
     }

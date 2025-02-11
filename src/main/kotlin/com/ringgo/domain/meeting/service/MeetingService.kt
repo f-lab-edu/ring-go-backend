@@ -8,6 +8,7 @@ import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.meeting.repository.MeetingRepository
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import com.ringgo.domain.user.entity.User
 import com.ringgo.domain.member.repository.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -60,12 +61,16 @@ class MeetingService(
     }
 
     @Transactional
-    fun updateStatus(id: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
-        val meeting = meetingRepository.findByIdOrNull(id)
+    fun updateStatus(
+        meetingId: UUID,
+        request: MeetingDto.UpdateStatus.Request,
+        user: User
+    ): MeetingDto.UpdateStatus.Response {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
         // 1. 멤버 여부 확인
-        val member = memberRepository.findByMeetingIdAndUserId(id, user.id)
+        val member = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
         // 2. CREATOR 역할 확인
@@ -99,5 +104,31 @@ class MeetingService(
                     joinedAt = member.joinedAt,
                 )
             }
+    }
+
+    @Transactional
+    fun kickMember(meetingId: UUID, memberId: UUID, user: User) {
+        // 1. 요청자가 모임원인지 확인 및 권한 검증
+        val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        requesterMember.validateCreatorRole()
+
+        // 2. 대상 모임원 조회
+        val targetMember = memberRepository.findById(memberId)
+            .orElseThrow { ApplicationException(ErrorCode.MEMBER_NOT_FOUND) }
+
+        // 3. 자기 자신을 내보낼 수 없음
+        if (targetMember.user.id == user.id) {
+            throw ApplicationException(ErrorCode.CANNOT_KICK_SELF)
+        }
+
+        // 4. 대상 모임원이 해당 모임의 멤버가 맞는지 확인
+        if (targetMember.meeting.id != meetingId) {
+            throw ApplicationException(ErrorCode.MEMBER_NOT_FOUND)
+        }
+
+        // 5. 모임원 삭제
+        targetMember.updateStatus(MemberStatus.KICKED)
     }
 }

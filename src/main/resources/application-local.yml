@@ -49,6 +49,5 @@ app:
       base-url: "http://localhost:8080"
 
 swagger:
-  local:
-    url: http://localhost:8080
-    description: Local Server
+  url: http://localhost:8080
+  description: Local Server

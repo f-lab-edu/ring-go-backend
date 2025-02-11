@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class SwaggerConfig(
-    @Value("\${swagger.local.url}") private val localUrl: String,
-    @Value("\${swagger.local.description}") private val localDescription: String,
+    @Value("\${swagger.url}") private val url: String,
+    @Value("\${swagger.description}") private val description: String,
 ) {
     @Bean
     fun openAPI(): OpenAPI = OpenAPI()
@@ -24,7 +24,7 @@ class SwaggerConfig(
         )
         .servers(
             listOf(
-                Server().url(localUrl).description(localDescription),
+                Server().url(url).description(description),
             )
         )
         .components(

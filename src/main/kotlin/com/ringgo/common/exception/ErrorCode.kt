@@ -18,9 +18,11 @@ enum class ErrorCode(
     // 모임 관련 에러
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "모임을 찾을 수 없습니다"),
     INVALID_MEETING_STATUS(HttpStatus.BAD_REQUEST, "M002", "잘못된 모임 상태입니다"),
-    NOT_MEETING_CREATOR(HttpStatus.FORBIDDEN, "M003", "모임 생성자만 가능합니다"),
+    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "M003", "허용되지 않는 상태 변경입니다"),
+    NOT_MEETING_CREATOR(HttpStatus.FORBIDDEN, "M004", "모임 생성자만 가능합니다"),
     NOT_MEETING_MEMBER(HttpStatus.FORBIDDEN, "M005", "해당 모임의 멤버가 아닙니다"),
-    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "M006", "허용되지 않는 상태 변경입니다"),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "M006", "해당 모임원을 찾을 수 없습니다"),
+    CANNOT_KICK_SELF(HttpStatus.BAD_REQUEST, "M007", "자기 자신을 내보낼 수 없습니다"),
 
     // 초대 관련 에러
     INVALID_INVITE_LINK(HttpStatus.BAD_REQUEST, "I001", "유효하지 않은 초대 링크입니다"),
