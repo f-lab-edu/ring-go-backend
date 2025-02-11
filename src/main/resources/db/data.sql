@@ -51,89 +51,89 @@ VALUES (RANDOM_UUID(), (SELECT id FROM meeting WHERE name = '떡잎 유치원 �
         (SELECT id FROM user WHERE email = 'suji@test.com'), 'MEMBER');
 
 -- 5. 활동 생성
-INSERT INTO activity (id, meeting_id, type, creator_id)
-VALUES (RANDOM_UUID(), (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반'),
+INSERT INTO activity (meeting_id, type, creator_id)
+VALUES ((SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반'),
         'EXPENSE', (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
-       (RANDOM_UUID(), (SELECT id FROM meeting WHERE name = '짱구네'),
+       ((SELECT id FROM meeting WHERE name = '짱구네'),
         'EXPENSE', (SELECT id FROM user WHERE email = 'chulsoo@test.com'));
 
 -- 6. 지출 기록: 짱구네 관련
-INSERT INTO expense (id, activity_id, creator_id, amount, category, description, expense_date)
-VALUES (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
-        (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
-        15000, 'FOOD', '떡볶이', '2025-01-11'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
-        (SELECT id FROM user WHERE email = 'yuri@test.com'),
-        8000, 'TRANSPORT', '택시', '2025-01-12'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
-        (SELECT id FROM user WHERE email = 'hoon@test.com'),
-        50000, 'SHOPPING', '액션가면', '2025-01-13'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
-        (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
-        20000, 'DATE', '놀이공원 티켓', '2025-01-14');
+INSERT INTO expense (activity_id, creator_id, amount, category, description, expense_date)
+VALUES (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
+           (SELECT id FROM user WHERE email = 'chulsoo@test.com'),
+           25000, 'FOOD', '라면', '2025-01-13'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
+           (SELECT id FROM user WHERE email = 'hoon@test.com'),
+           12000, 'DATE', '영화 티켓', '2025-01-14'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
+           (SELECT id FROM user WHERE email = 'suji@test.com'),
+           18000, 'TRANSPORT', '지하철', '2025-01-15'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
+           (SELECT id FROM user WHERE email = 'maenggu@test.com'),
+           30000, 'FOOD', '초밥', '2025-01-16'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
+           (SELECT id FROM user WHERE email = 'yuri@test.com'),
+           7000, 'FOOD', '아이스크림', '2025-01-17');
 
 -- 7. 지출 기록: 떡잎 유치원 해바라기반 관련
-INSERT INTO expense (id, activity_id, creator_id, amount, category, description, expense_date)
-VALUES (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
-        (SELECT id FROM user WHERE email = 'chulsoo@test.com'),
-        25000, 'FOOD', '라면', '2025-01-13'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
-        (SELECT id FROM user WHERE email = 'hoon@test.com'),
-        12000, 'DATE', '영화 티켓', '2025-01-14'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
-        (SELECT id FROM user WHERE email = 'suji@test.com'),
-        18000, 'TRANSPORT', '지하철', '2025-01-15'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
-        (SELECT id FROM user WHERE email = 'maenggu@test.com'),
-        30000, 'FOOD', '초밥', '2025-01-16'),
-       (RANDOM_UUID(),
-        (SELECT id
-         FROM activity
-         WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
-           AND type = 'EXPENSE'
-           AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
-        (SELECT id FROM user WHERE email = 'yuri@test.com'),
-        7000, 'FOOD', '아이스크림', '2025-01-17');
+INSERT INTO expense (activity_id, creator_id, amount, category, description, expense_date)
+VALUES (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
+           (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
+           15000, 'FOOD', '떡볶이', '2025-01-11'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
+           (SELECT id FROM user WHERE email = 'yuri@test.com'),
+           8000, 'TRANSPORT', '택시', '2025-01-12'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
+           (SELECT id FROM user WHERE email = 'hoon@test.com'),
+           50000, 'SHOPPING', '액션가면', '2025-01-13'),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
+              AND type = 'EXPENSE'
+              AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
+           (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
+           20000, 'DATE', '놀이공원 티켓', '2025-01-14');
 
 -- 8. 반응 추가: 짱구네 관련 지출에 대한 반응
 INSERT INTO reaction (id, expense_id, reactor_id, emoji)
