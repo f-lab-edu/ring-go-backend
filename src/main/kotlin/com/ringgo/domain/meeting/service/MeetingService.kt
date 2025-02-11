@@ -14,7 +14,6 @@ import com.ringgo.domain.member.repository.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Service
@@ -62,7 +61,11 @@ class MeetingService(
     }
 
     @Transactional
-    fun updateStatus(meetingId: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
+    fun updateStatus(
+        meetingId: UUID,
+        request: MeetingDto.UpdateStatus.Request,
+        user: User
+    ): MeetingDto.UpdateStatus.Response {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
@@ -104,8 +107,8 @@ class MeetingService(
     }
 
     @Transactional
-    fun kickMember(meetingId: UUID, memberId: UUID, user: User): MeetingDto.KickMember.Response {
-        // 1. 요청자의 멤버십 확인 및 권한 검증
+    fun kickMember(meetingId: UUID, memberId: UUID, user: User) {
+        // 1. 요청자가 모임원인지 확인 및 권한 검증
         val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
@@ -127,10 +130,5 @@ class MeetingService(
 
         // 5. 모임원 삭제
         targetMember.updateStatus(MemberStatus.KICKED)
-
-        return MeetingDto.KickMember.Response(
-            id = targetMember.id,
-            status = targetMember.status
-        )
     }
 }

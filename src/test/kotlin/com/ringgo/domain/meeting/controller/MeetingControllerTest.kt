@@ -433,21 +433,16 @@ class MeetingControllerTest {
                 private val memberId = UUID.randomUUID()
 
                 @Test
-                fun `모임원 내보내기 성공시 200을 응답한다`() {
+                fun `모임원 내보내기 성공시 204를 응답한다`() {
                     // given
-                    val expectedResponse = MeetingDto.KickMember.Response(
-                        id = memberId,
-                        status = MemberStatus.KICKED
-                    )
-                    every { meetingService.kickMember(meetingId, memberId, any()) } returns expectedResponse
+                    every { meetingService.kickMember(meetingId, memberId, any()) } just runs
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
-                        .andExpect(status().isOk)
-                        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                        .andExpect(status().isNoContent)
                         .andDo(print())
 
                     verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, any()) }
@@ -462,7 +457,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isForbidden)
@@ -478,7 +473,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isBadRequest)
@@ -494,7 +489,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isNotFound)
