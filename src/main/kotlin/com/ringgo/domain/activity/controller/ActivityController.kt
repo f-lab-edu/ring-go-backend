@@ -55,4 +55,20 @@ class ActivityController(
     ): ActivityDto.UpdateStatus.Response {
         return activityService.updateStatus(id, request, user)
     }
+
+    @Operation(summary = "활동 목록 조회", description = "모임의 모든 활동 목록을 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "조회 성공"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음")
+        ]
+    )
+    @GetMapping("/meeting/{meetingId}")
+    fun getMyActivities(
+        @PathVariable meetingId: UUID,
+        @AuthenticationPrincipal user: User
+    ): List<ActivityDto.Get.Response> {
+        return activityService.getMyActivities(meetingId, user)
+    }
 }

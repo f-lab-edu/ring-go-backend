@@ -19,11 +19,11 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.Instant
 import java.util.*
 
 @WebMvcTest(ActivityController::class)
@@ -214,6 +214,87 @@ class ActivityControllerTest {
             )
                 .andExpect(status().isBadRequest)
                 .andDo(print())
+        }
+    }
+
+    @Nested
+    @DisplayName("활동 목록 조회 API")
+    inner class GetActivities {
+        private val meetingId = UUID.randomUUID()
+
+        @Test
+        fun `활동 목록 조회 성공시 200을 응답한다`() {
+            // given
+            val expectedResponse = listOf(
+                ActivityDto.Get.Response(
+                    id = 1L,
+                    type = ActivityType.EXPENSE,
+                    status = ActivityStatus.ACTIVE,
+                    isCreator = true,
+                    createdAt = Instant.parse("2025-01-12T10:00:00Z")
+                )
+            )
+            every { activityService.getMyActivities(meetingId, testUser) } returns expectedResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/activity/meeting/{meetingId}", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { activityService.getMyActivities(meetingId, testUser) }
+        }
+
+        @Test
+        fun `모임이 존재하지 않으면 404를 응답한다`() {
+            // given
+            every {
+                activityService.getMyActivities(meetingId, testUser)
+            } throws ApplicationException(ErrorCode.MEETING_NOT_FOUND)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/activity/meeting/{meetingId}", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isNotFound)
+                .andDo(print())
+        }
+
+        @Test
+        fun `모임의 멤버가 아닌 경우 403을 응답한다`() {
+            // given
+            every {
+                activityService.getMyActivities(meetingId, testUser)
+            } throws ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/activity/meeting/{meetingId}", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isForbidden)
+                .andDo(print())
+        }
+
+        @Test
+        fun `활동이 없을 경우 빈 리스트를 반환한다`() {
+            // given
+            every { activityService.getMyActivities(meetingId, testUser) } returns emptyList()
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/activity/meeting/{meetingId}", meetingId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(emptyList<ActivityDto.Get.Response>())))
+                .andDo(print())
+
+            verify(exactly = 1) { activityService.getMyActivities(meetingId, testUser) }
         }
     }
 }

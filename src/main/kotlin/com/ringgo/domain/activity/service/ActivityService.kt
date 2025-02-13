@@ -12,6 +12,7 @@ import com.ringgo.domain.user.entity.User
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @Transactional(readOnly = true)
@@ -72,5 +73,27 @@ class ActivityService(
             id = activity.id,
             status = activity.status
         )
+    }
+
+    fun getMyActivities(meetingId: UUID, user: User): List<ActivityDto.Get.Response> {
+        // 1. 모임 존재 여부 확인
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+            ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
+
+        // 2. 사용자가 모임의 멤버인지 확인
+        val member = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        // 3. 활동 목록 조회
+        return activityRepository.findByMeetingId(meetingId)
+            .map { activity ->
+                ActivityDto.Get.Response(
+                    id = activity.id,
+                    type = activity.type,
+                    status = activity.status,
+                    isCreator = activity.creator.id == user.id,
+                    createdAt = activity.createdAt
+                )
+            }
     }
 }
