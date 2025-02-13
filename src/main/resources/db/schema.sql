@@ -67,6 +67,7 @@ CREATE TABLE activity
 (
     id         BIGINT      NOT NULL AUTO_INCREMENT COMMENT '활동 ID',
     type       VARCHAR(20) NOT NULL COMMENT '활동 유형',
+    status     VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '활동 상태(ACTIVE/ENDED/DELETED)',
     meeting_id UUID        NOT NULL COMMENT '모임 ID',
     creator_id UUID        NOT NULL COMMENT '생성자 ID',
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',

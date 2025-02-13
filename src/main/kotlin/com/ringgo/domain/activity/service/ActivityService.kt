@@ -46,4 +46,31 @@ class ActivityService(
         val savedActivity = activityRepository.save(activity)
         return ActivityDto.Create.Response(savedActivity.id)
     }
+
+    @Transactional
+    fun updateStatus(
+        id: Long,
+        request: ActivityDto.UpdateStatus.Request,
+        user: User
+    ): ActivityDto.UpdateStatus.Response {
+        val activity = activityRepository.findByIdOrNull(id)
+            ?: throw ApplicationException(ErrorCode.ACTIVITY_NOT_FOUND)
+
+        // 1. 사용자가 모임의 멤버인지 확인
+        val member = memberRepository.findByMeetingIdAndUserId(activity.meeting.id, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        // 2. 사용자가 모임의 생성자인지 확인
+        if (activity.meeting.creator.id != user.id) {
+            throw ApplicationException(ErrorCode.NOT_MEETING_CREATOR)
+        }
+
+        // 3. 상태 변경
+        activity.updateStatus(request.status)
+
+        return ActivityDto.UpdateStatus.Response(
+            id = activity.id,
+            status = activity.status
+        )
+    }
 }
