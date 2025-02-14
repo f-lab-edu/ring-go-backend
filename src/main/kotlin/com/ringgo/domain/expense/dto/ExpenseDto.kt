@@ -49,4 +49,57 @@ class ExpenseDto {
             val createdAt: Instant
         )
     }
+
+    @Schema(description = "지출 수정")
+    class Update {
+        @Schema(description = "지출 수정 요청", name = "ExpenseUpdateRequest")
+        data class Request(
+            @field:Size(min = 1, max = 20, message = "지출명은 1자 이상 20자 이하여야 합니다")
+            @Schema(description = "지출명", example = "갓덴스시")
+            val name: String? = null,
+
+            @field:Positive(message = "금액은 0보다 커야 합니다")
+            @Schema(
+                description = "금액",
+                example = "56000.00",
+                type = "number",
+                format = "decimal",
+                minimum = "0.01",
+                maximum = "9999999999.99"
+            )
+            val amount: BigDecimal? = null,
+
+            @Schema(
+                description = "카테고리 (FOOD/SHOPPING/TRANSPORT/LIVING/MEDICAL/OTHER)",
+                example = "FOOD",
+                implementation = ExpenseCategory::class
+            )
+            val category: ExpenseCategory? = null,
+
+            @field:Size(max = 200, message = "설명은 200자를 넘을 수 없습니다")
+            @Schema(
+                description = "설명 (최대 200자)",
+                example = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
+                required = false
+            )
+            val description: String? = null,
+
+            @Schema(
+                description = "지출일자",
+                example = "2025-02-14T12:00:00Z",
+                type = "string",
+                format = "date-time"
+            )
+            val expenseDate: Instant? = null
+        )
+
+        @Schema(description = "지출 수정 응답", name = "ExpenseUpdateResponse")
+        data class Response(
+            @Schema(description = "지출 ID", example = "1")
+            val id: Long,
+
+            @Schema(description = "수정일시", example = "2025-02-14T12:00:00Z")
+            val updatedAt: Instant
+        )
+    }
 }
