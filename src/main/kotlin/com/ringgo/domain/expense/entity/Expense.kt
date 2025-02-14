@@ -1,6 +1,9 @@
 package com.ringgo.domain.expense.entity
 
+import com.ringgo.common.exception.ApplicationException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.activity.entity.ExpenseActivity
+import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
@@ -9,9 +12,9 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.*
 
 @Entity
-@Table(name = "expense")
 @EntityListeners(AuditingEntityListener::class)
 class Expense(
     @OneToOne(fetch = FetchType.LAZY)
@@ -23,20 +26,20 @@ class Expense(
     val creator: User,
 
     @Column(nullable = false, length = 100)
-    val name: String,
+    private var name: String,
 
     @Column(nullable = false, precision = 10, scale = 2)
-    val amount: BigDecimal,
+    private var amount: BigDecimal,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val category: ExpenseCategory,
+    private var category: ExpenseCategory,
 
     @Column(columnDefinition = "TEXT")
-    val description: String?,
+    private var description: String?,
 
     @Column(nullable = false)
-    val expenseDate: Instant,
+    private var expenseDate: Instant
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,9 +53,43 @@ class Expense(
     @Column(nullable = false)
     lateinit var updatedAt: Instant
 
-    @Column(nullable = false)
-    var isDeleted: Boolean = false
+    init {
+        validateAmount(amount)
+        validateExpenseDate(expenseDate)
+    }
 
-    @Column
-    var deletedAt: Instant? = null
+    fun update(request: ExpenseDto.Update.Request, requesterId: UUID) {
+        validateCreator(requesterId)
+
+        // null이 아닌 필드만 업데이트
+        request.name?.let { this.name = it }
+        request.amount?.let {
+            validateAmount(it)
+            this.amount = it
+        }
+        request.category?.let { this.category = it }
+        request.description?.let { this.description = it }
+        request.expenseDate?.let {
+            validateExpenseDate(it)
+            this.expenseDate = it
+        }
+    }
+
+    private fun validateAmount(amount: BigDecimal) {
+        if (amount <= BigDecimal.ZERO) {
+            throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
+        }
+    }
+
+    private fun validateExpenseDate(expenseDate: Instant) {
+        if (expenseDate.isAfter(Instant.now())) {
+            throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
+        }
+    }
+
+    private fun validateCreator(requesterId: UUID) {
+        if (creator.id != requesterId) {
+            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+        }
+    }
 }
