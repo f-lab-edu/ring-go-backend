@@ -31,12 +31,13 @@ enum class ErrorCode(
     ALREADY_JOINED_MEMBER(HttpStatus.CONFLICT, "I004", "이미 해당 모임에 가입된 멤버입니다"),
     MEETING_MEMBER_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "I005", "모임 인원이 초과되었습니다"),
 
-    // 활동 관련 에러 추가
+    // 활동 관련 에러
     INVALID_ACTIVITY_TYPE(HttpStatus.BAD_REQUEST, "A001", "지원하지 않는 활동 유형입니다"),
     ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND, "A002", "활동을 찾을 수 없습니다"),
     DUPLICATE_ACTIVITY_TYPE(HttpStatus.CONFLICT, "A003", "해당 모임에 이미 동일한 유형의 활동이 존재합니다"),
+    INACTIVE_ACTIVITY(HttpStatus.BAD_REQUEST, "A004", "비활성화된 활동입니다"),
 
-    // 지출 관련 에러 추가
+    // 지출 관련 에러
     EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "지출 기록을 찾을 수 없습니다"),
     INVALID_EXPENSE_AMOUNT(HttpStatus.BAD_REQUEST, "E002", "올바르지 않은 지출 금액입니다"),
     INVALID_EXPENSE_CATEGORY(HttpStatus.BAD_REQUEST, "E003", "올바르지 않은 지출 카테고리입니다"),

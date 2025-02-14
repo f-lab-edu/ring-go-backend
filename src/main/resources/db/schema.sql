@@ -108,19 +108,22 @@ CREATE TABLE event_participation
 -- 8. 지출 테이블
 CREATE TABLE expense
 (
-    id           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '지출 ID',
-    activity_id  BIGINT NOT NULL COMMENT '활동 ID',
+    id           BIGINT          NOT NULL AUTO_INCREMENT COMMENT '지출 ID',
+    activity_id  BIGINT         NOT NULL COMMENT '활동 ID',
     creator_id   UUID           NOT NULL COMMENT '작성자 ID',
+    name         VARCHAR(100)   NOT NULL COMMENT '지출명',
     amount       DECIMAL(10, 2) NOT NULL COMMENT '금액',
     category     VARCHAR(20)    NOT NULL COMMENT '카테고리',
-    description  TEXT COMMENT '설명',
-    expense_date DATE           NOT NULL COMMENT '지출일자',
-    created_at   DATETIME(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
-    updated_at   DATETIME(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
+    description  TEXT           NULL COMMENT '설명',
+    expense_date TIMESTAMP(6)   NOT NULL COMMENT '지출일자',
+    is_deleted   BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '삭제 여부',
+    deleted_at   TIMESTAMP(6)   NULL COMMENT '삭제일시',
+    created_at   TIMESTAMP(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
+    updated_at   TIMESTAMP(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '수정일시',
     PRIMARY KEY (id),
     CONSTRAINT fk_expense_activity FOREIGN KEY (activity_id) REFERENCES activity (id),
     CONSTRAINT fk_expense_creator FOREIGN KEY (creator_id) REFERENCES user (id)
-) COMMENT ='지출';
+) COMMENT '지출';
 
 -- 9. 응모권 이력 테이블
 CREATE TABLE ticket_history
@@ -250,5 +253,6 @@ CREATE INDEX idx_meeting_creator ON meeting (creator_id);
 CREATE INDEX idx_member_user ON member (user_id);
 CREATE INDEX idx_member_meeting ON member (meeting_id);
 CREATE INDEX idx_expense_creator ON expense (creator_id);
+CREATE INDEX idx_expense_is_deleted ON expense (is_deleted);
 CREATE INDEX idx_activity_meeting ON activity (meeting_id);
 CREATE INDEX idx_invite_links_expired_at ON invite_links (expired_at);
