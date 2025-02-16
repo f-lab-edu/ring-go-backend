@@ -57,6 +57,7 @@ class ExpenseController(
         @Valid @RequestBody request: ExpenseDto.Update.Request,
         @AuthenticationPrincipal user: User
     ): ExpenseDto.Update.Response {
+        log.info { "Update expense request: $request" }
         return expenseService.update(id, request, user)
     }
 }
