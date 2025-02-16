@@ -60,4 +60,22 @@ class ExpenseController(
         log.info { "Update expense request: $request" }
         return expenseService.update(id, request, user)
     }
+
+    @Operation(summary = "지출 삭제", description = "지출 기록을 삭제 처리합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "204", description = "지출 삭제 성공"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "지출 기록을 찾을 수 없음")
+        ]
+    )
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal user: User
+    ) {
+        log.info { "Delete expense request: $id" }
+        expenseService.delete(id, user)
+    }
 }
