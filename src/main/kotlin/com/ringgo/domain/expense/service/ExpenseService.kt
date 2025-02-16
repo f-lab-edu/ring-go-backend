@@ -7,10 +7,10 @@ import com.ringgo.domain.activity.entity.enums.ActivityStatus
 import com.ringgo.domain.activity.repository.ActivityRepository
 import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.Expense
-import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.expense.repository.ExpenseRepository
 import com.ringgo.domain.member.repository.MemberRepository
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +24,10 @@ class ExpenseService(
     private val activityRepository: ActivityRepository,
     private val memberRepository: MemberRepository
 ) {
+    companion object {
+        private val log = KotlinLogging.logger {}
+    }
+
     @Transactional
     fun create(request: ExpenseDto.Create.Request, user: User): ExpenseDto.Create.Response {
         // 1. 활동 조회 및 검증
@@ -44,31 +48,28 @@ class ExpenseService(
             throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
         }
 
-        // 5. 카테고리 검증
-        if (!ExpenseCategory.entries.toTypedArray().contains(request.category)) {
-            throw ApplicationException(ErrorCode.INVALID_EXPENSE_CATEGORY)
-        }
-
-        // 6. 날짜 검증
+        // 5. 날짜 검증
         if (request.expenseDate.isAfter(Instant.now())) {
             throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
         }
 
-        // 7. 지출 생성 및 저장
-        val expense = Expense(
-            activity = activity,
-            creator = user,
-            name = request.name,
-            amount = request.amount,
-            category = request.category,
-            description = request.description,
-            expenseDate = request.expenseDate
+        // 6. 지출 생성 및 저장
+        val expense = expenseRepository.save(
+            Expense(
+                activity = activity,
+                creator = user,
+                name = request.name,
+                amount = request.amount,
+                category = request.category,
+                description = request.description,
+                expenseDate = request.expenseDate
+            )
         )
 
-        val savedExpense = expenseRepository.save(expense)
+        log.info { "Expense created: ${expense.id}" }
         return ExpenseDto.Create.Response(
-            id = savedExpense.id,
-            createdAt = savedExpense.createdAt
+            id = expense.id,
+            createdAt = expense.createdAt
         )
     }
 

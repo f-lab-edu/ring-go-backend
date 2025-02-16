@@ -3,6 +3,7 @@ package com.ringgo.domain.expense.controller
 import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.service.ExpenseService
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -18,6 +19,10 @@ import org.springframework.web.bind.annotation.*
 class ExpenseController(
     private val expenseService: ExpenseService
 ) {
+    companion object {
+        private val log = KotlinLogging.logger {}
+    }
+
     @Operation(summary = "지출 생성", description = "새로운 지출을 생성합니다.")
     @ApiResponses(
         value = [
@@ -33,6 +38,7 @@ class ExpenseController(
         @Valid @RequestBody request: ExpenseDto.Create.Request,
         @AuthenticationPrincipal user: User
     ): ExpenseDto.Create.Response {
+        log.info { "Create expense request: $request" }
         return expenseService.create(request, user)
     }
 

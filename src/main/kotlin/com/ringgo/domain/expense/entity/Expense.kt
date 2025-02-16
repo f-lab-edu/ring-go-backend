@@ -6,7 +6,9 @@ import com.ringgo.domain.activity.entity.ExpenseActivity
 import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -15,8 +17,14 @@ import java.time.Instant
 import java.util.*
 
 @Entity
+@Table(name = "expense")
+@SQLRestriction("is_deleted = false")
 @EntityListeners(AuditingEntityListener::class)
 class Expense(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0L,
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "activity_id", nullable = false)
     val activity: ExpenseActivity,
@@ -26,25 +34,21 @@ class Expense(
     val creator: User,
 
     @Column(nullable = false, length = 100)
-    private var name: String,
+    var name: String,
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private var amount: BigDecimal,
+    var amount: BigDecimal,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private var category: ExpenseCategory,
+    var category: ExpenseCategory,
 
     @Column(columnDefinition = "TEXT")
-    private var description: String?,
+    var description: String?,
 
     @Column(nullable = false)
-    private var expenseDate: Instant
+    var expenseDate: Instant
 ) {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     lateinit var createdAt: Instant
@@ -53,43 +57,25 @@ class Expense(
     @Column(nullable = false)
     lateinit var updatedAt: Instant
 
-    init {
-        validateAmount(amount)
-        validateExpenseDate(expenseDate)
+    @Column(nullable = false)
+    var isDeleted: Boolean = false
+
+    @Column
+    var deletedAt: Instant? = null
+
+    companion object {
+        private val log = KotlinLogging.logger {}
     }
 
     fun update(request: ExpenseDto.Update.Request, requesterId: UUID) {
-        validateCreator(requesterId)
-
-        // null이 아닌 필드만 업데이트
-        request.name?.let { this.name = it }
-        request.amount?.let {
-            validateAmount(it)
-            this.amount = it
-        }
-        request.category?.let { this.category = it }
-        request.description?.let { this.description = it }
-        request.expenseDate?.let {
-            validateExpenseDate(it)
-            this.expenseDate = it
-        }
-    }
-
-    private fun validateAmount(amount: BigDecimal) {
-        if (amount <= BigDecimal.ZERO) {
-            throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
-        }
-    }
-
-    private fun validateExpenseDate(expenseDate: Instant) {
-        if (expenseDate.isAfter(Instant.now())) {
-            throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
-        }
-    }
-
-    private fun validateCreator(requesterId: UUID) {
         if (creator.id != requesterId) {
             throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
         }
+
+        request.name?.let { name = it }
+        request.amount?.let { amount = it }
+        request.category?.let { category = it }
+        request.description?.let { description = it }
+        request.expenseDate?.let { expenseDate = it }
     }
 }

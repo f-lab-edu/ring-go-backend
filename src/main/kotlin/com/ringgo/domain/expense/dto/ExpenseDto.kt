@@ -20,56 +20,32 @@ class ExpenseDto {
 
             @field:NotBlank(message = "지출명은 필수입니다")
             @field:Size(min = 1, max = 20, message = "지출명은 1자 이상 20자 이하여야 합니다")
-            @Schema(description = "지출명", example = "갓덴스시")
+            @Schema(description = "지출명", example = "점심식사")
             val name: String,
 
             @field:NotNull(message = "금액은 필수입니다")
             @field:Positive(message = "금액은 0보다 커야 합니다")
-            @Schema(
-                description = "금액",
-                example = "56000.00",
-                type = "number",
-                format = "decimal",
-                minimum = "0.01",
-                maximum = "9999999999.99"
-            )
+            @Schema(description = "금액", example = "15000")
             val amount: BigDecimal,
 
             @field:NotNull(message = "카테고리는 필수입니다")
-            @Schema(
-                description = "카테고리 (FOOD/SHOPPING/TRANSPORT/LIVING/MEDICAL/OTHER)",
-                example = "FOOD",
-                implementation = ExpenseCategory::class
-            )
+            @Schema(description = "카테고리", example = "FOOD")
             val category: ExpenseCategory,
 
             @field:Size(max = 200, message = "설명은 200자를 넘을 수 없습니다")
-            @Schema(
-                description = "설명 (최대 200자)",
-                example = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-                required = false
-            )
+            @Schema(description = "설명", example = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ")
             val description: String?,
 
             @field:NotNull(message = "지출일자는 필수입니다")
-            @Schema(
-                description = "지출일자",
-                example = "2025-02-14T12:00:00Z",
-                type = "string",
-                format = "date-time"
-            )
+            @Schema(description = "지출일자", example = "2025-02-14T12:00:00Z")
             val expenseDate: Instant
         )
 
         @Schema(description = "지출 생성 응답", name = "ExpenseCreateResponse")
         data class Response(
-            @Schema(description = "지출 ID", example = "1")
+            @Schema(description = "지출 ID")
             val id: Long,
-
-            @Schema(
-                description = "생성일시",
-                example = "2025-02-14T12:00:00Z"
-            )
+            @Schema(description = "생성일시")
             val createdAt: Instant
         )
     }
