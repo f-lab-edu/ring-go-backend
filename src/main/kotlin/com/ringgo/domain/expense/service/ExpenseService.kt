@@ -101,21 +101,4 @@ class ExpenseService(
             updatedAt = expense.updatedAt
         )
     }
-
-    @Transactional
-    fun update(
-        id: Long,
-        request: ExpenseDto.Update.Request,
-        user: User
-    ): ExpenseDto.Update.Response {
-        val expense = expenseRepository.findByIdOrNull(id)
-            ?: throw ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
-
-        expense.update(request, user.id)
-
-        return ExpenseDto.Update.Response(
-            id = expense.id,
-            updatedAt = expense.updatedAt
-        )
-    }
 }
