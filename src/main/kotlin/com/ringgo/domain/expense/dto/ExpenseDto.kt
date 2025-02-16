@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
+import java.util.*
 
 class ExpenseDto {
     @Schema(description = "지출 생성")
@@ -38,7 +40,7 @@ class ExpenseDto {
 
             @field:NotNull(message = "지출일자는 필수입니다")
             @Schema(description = "지출일자", example = "2025-02-14T12:00:00Z")
-            val expenseDate: Instant
+            val expenseDate: LocalDate
         )
 
         @Schema(description = "지출 생성 응답", name = "ExpenseCreateResponse")
@@ -70,7 +72,7 @@ class ExpenseDto {
             val description: String?,
 
             @Schema(description = "지출일자")
-            val expenseDate: Instant?
+            val expenseDate: LocalDate?
         )
 
         @Schema(description = "지출 수정 응답", name = "ExpenseUpdateResponse")
@@ -79,6 +81,59 @@ class ExpenseDto {
             val id: Long,
             @Schema(description = "수정일시")
             val updatedAt: Instant
+        )
+    }
+
+    @Schema(description = "지출 목록 조회")
+    class Get {
+        @Schema(description = "지출 목록 조회 요청", name = "ExpenseGetRequest")
+        data class Request(
+            @field:NotNull(message = "활동 ID는 필수입니다")
+            @Schema(description = "활동 ID", example = "1")
+            val activityId: Long,
+
+            @Schema(description = "과거순 정렬 여부 (true: 과거순, false: 최신순)", example = "false")
+            val sortOrder: Boolean = false
+        )
+
+        @Schema(description = "지출 목록 조회 응답", name = "ExpenseGetResponse")
+        data class Response(
+            @Schema(description = "날짜별 지출 목록")
+            val dailyExpenses: List<DailyExpense>
+        )
+
+        @Schema(description = "날짜별 지출 내역", name = "ExpenseGetDailyExpense")
+        data class DailyExpense(
+            @Schema(description = "날짜", example = "2024-02-15")
+            val date: LocalDate,
+
+            @Schema(description = "사용자별 지출 내역")
+            val userExpenses: List<UserExpense>
+        )
+
+        @Schema(description = "사용자별 지출 내역", name = "ExpenseGetUserExpense")
+        data class UserExpense(
+            @Schema(description = "사용자 ID")
+            val userId: UUID,
+
+            @Schema(description = "사용자 이름")
+            val userName: String,
+
+            @Schema(description = "지출 목록")
+            val expenses: List<ExpenseItem>,
+
+            @Schema(description = "총 지출액")
+            val totalAmount: BigDecimal
+        )
+
+        @Schema(description = "지출 항목", name = "ExpenseGetExpenseItem")
+        data class ExpenseItem(
+            val id: Long,
+            val name: String,
+            val amount: BigDecimal,
+            val category: ExpenseCategory,
+            val description: String?,
+            val createdAt: Instant,
         )
     }
 }

@@ -115,7 +115,7 @@ CREATE TABLE expense
     amount       DECIMAL(10, 2) NOT NULL COMMENT '금액',
     category     VARCHAR(20)    NOT NULL COMMENT '카테고리',
     description  TEXT           NULL COMMENT '설명',
-    expense_date TIMESTAMP(6)   NOT NULL COMMENT '지출일자',
+    expense_date DATE           NOT NULL COMMENT '지출일자',
     is_deleted   BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '삭제 여부',
     deleted_at   TIMESTAMP(6)   NULL COMMENT '삭제일시',
     created_at   TIMESTAMP(6)   NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',

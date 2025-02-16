@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 
 @WebMvcTest(ExpenseController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -66,7 +67,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("10000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = Instant.parse("2025-02-14T12:00:00Z")
+            expenseDate = LocalDate.parse("2025-02-14")
         )
 
         @Test
@@ -130,7 +131,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("66000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = Instant.parse("2025-02-14T12:00:00Z")
+            expenseDate = LocalDate.parse("2025-02-14")
         )
 
         @Test
@@ -246,6 +247,111 @@ class ExpenseControllerTest {
                 .andDo(print())
 
             verify(exactly = 1) { expenseService.delete(expenseId, testUser) }
+        }
+    }
+
+    @Nested
+    @DisplayName("지출 목록 조회 API")
+    inner class ListExpense {
+        private val activityId = 1L
+        private val request = ExpenseDto.Get.Request(
+            activityId = activityId,
+            sortOrder = false
+        )
+
+        private val now = LocalDate.of(2025, 2, 14)
+        private val expenseItems = listOf(
+            ExpenseDto.Get.ExpenseItem(
+                id = 1L,
+                name = "갓덴스시",
+                amount = BigDecimal("15000.00"),
+                category = ExpenseCategory.FOOD,
+                description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음..",
+                createdAt = Instant.parse("2025-01-13T12:00:00Z")
+            ),
+            ExpenseDto.Get.ExpenseItem(
+                id = 2L,
+                name = "택시비",
+                amount = BigDecimal("15000.00"),
+                category = ExpenseCategory.TRANSPORT,
+                description = "늦게까지 일하다가 택시타고 귀가",
+                createdAt = Instant.parse("2025-01-13T13:00:00Z")
+            )
+        )
+
+        private val userExpense = ExpenseDto.Get.UserExpense(
+            userId = testUser.id,
+            userName = testUser.name,
+            expenses = expenseItems,
+            totalAmount = BigDecimal("30000.00")
+        )
+
+        @Test
+        fun `지출 목록 조회 성공시 200을 응답한다`() {
+            // given
+            val expectedResponse = ExpenseDto.Get.Response(
+                dailyExpenses = listOf(
+                    ExpenseDto.Get.DailyExpense(
+                        date = now,
+                        userExpenses = listOf(userExpense)
+                    )
+                )
+            )
+            every { expenseService.list(request, any()) } returns expectedResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense")
+                    .param("activityId", activityId.toString())
+                    .param("sortOrder", "false")
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.list(request, any()) }
+        }
+
+        @Test
+        fun `활동을 찾을 수 없으면 404를 응답한다`() {
+            // given
+            every { expenseService.list(request, any()) } throws
+                    ApplicationException(ErrorCode.ACTIVITY_NOT_FOUND)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense")
+                    .param("activityId", activityId.toString())
+            )
+                .andExpect(status().isNotFound)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.list(request, any()) }
+        }
+
+        @Test
+        fun `모임 멤버가 아니면 403을 응답한다`() {
+            // given
+            every { expenseService.list(request, any()) } throws
+                    ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense")
+                    .param("activityId", activityId.toString())
+            )
+                .andExpect(status().isForbidden)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.list(request, any()) }
+        }
+
+        @Test
+        fun `활동 ID 없이 요청하면 400을 응답한다`() {
+            // when & then
+            mockMvc.perform(get("/api/v1/expense"))
+                .andExpect(status().isBadRequest)
+                .andDo(print())
         }
     }
 }
