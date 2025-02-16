@@ -1,6 +1,9 @@
 package com.ringgo.domain.expense.entity
 
+import com.ringgo.common.exception.ApplicationException
+import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.activity.entity.ExpenseActivity
+import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -11,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.*
 
 @Entity
 @Table(name = "expense")
@@ -61,5 +65,17 @@ class Expense(
 
     companion object {
         private val log = KotlinLogging.logger {}
+    }
+
+    fun update(request: ExpenseDto.Update.Request, requesterId: UUID) {
+        if (creator.id != requesterId) {
+            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+        }
+
+        request.name?.let { name = it }
+        request.amount?.let { amount = it }
+        request.category?.let { category = it }
+        request.description?.let { description = it }
+        request.expenseDate?.let { expenseDate = it }
     }
 }
