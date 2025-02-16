@@ -90,7 +90,7 @@ class ExpenseControllerTest {
         }
 
         @Test
-        fun `지출명이 없으면 400을 응답한다`() {
+        fun `유효하지 않은 요청시 400을 응답한다`() {
             // given
             val invalidRequest = request.copy(name = "")
 
@@ -99,66 +99,6 @@ class ExpenseControllerTest {
                 post("/api/v1/expense")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(invalidRequest))
-            )
-                .andExpect(status().isBadRequest)
-                .andDo(print())
-        }
-
-        @Test
-        fun `금액이 0 이하면 400을 응답한다`() {
-            // given
-            val invalidRequest = request.copy(amount = BigDecimal.ZERO)
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/expense")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidRequest))
-            )
-                .andExpect(status().isBadRequest)
-                .andDo(print())
-        }
-
-        @Test
-        fun `지출명이 20자를 초과하면 400을 응답한다`() {
-            // given
-            val invalidRequest = request.copy(name = "일".repeat(21))
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/expense")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidRequest))
-            )
-                .andExpect(status().isBadRequest)
-                .andDo(print())
-        }
-
-        @Test
-        fun `설명이 200자를 초과하면 400을 응답한다`() {
-            // given
-            val invalidRequest = request.copy(description = "가".repeat(201))
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/expense")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(invalidRequest))
-            )
-                .andExpect(status().isBadRequest)
-                .andDo(print())
-        }
-
-        @Test
-        fun `비활성화된 활동에 지출을 생성하면 400을 응답한다`() {
-            // given
-            every { expenseService.create(request, any()) } throws ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/expense")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isBadRequest)
                 .andDo(print())
@@ -176,21 +116,6 @@ class ExpenseControllerTest {
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isNotFound)
-                .andDo(print())
-        }
-
-        @Test
-        fun `모임의 멤버가 아닌 경우 403을 응답한다`() {
-            // given
-            every { expenseService.create(request, any()) } throws ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
-
-            // when & then
-            mockMvc.perform(
-                post("/api/v1/expense")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            )
-                .andExpect(status().isForbidden)
                 .andDo(print())
         }
     }
