@@ -1,40 +1,68 @@
 package com.ringgo.common.exception
 
-import com.ringgo.common.dto.CommonResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
     companion object {
         private val log = KotlinLogging.logger {}
     }
 
     @ExceptionHandler(ApplicationException::class)
-    fun handleApplicationException(e: ApplicationException) = ResponseEntity
-        .status(e.errorCode.status)
-        .body(CommonResponse.error(e.errorCode.status.value(), e.errorCode.message))
+    fun handleApplicationException(e: ApplicationException): ResponseEntity<ErrorResponse> {
+        log.warn { "handleApplicationException: $e" }
+        return ResponseEntity
+            .status(e.errorCode.status)
+            .body(ErrorResponse(e.errorCode))
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        log.error { "handleMethodArgumentNotValidException: $e" }
-        val errorResponse = ErrorResponse(
-            code = ErrorCode.INVALID_INPUT_VALUE.code,
-            message = e.bindingResult.fieldError?.defaultMessage ?: "잘못된 입력값입니다"
-        )
-        return ResponseEntity.badRequest().body(errorResponse)
+    fun handleMethodArgumentNotValidException(
+        e: MethodArgumentNotValidException
+    ): ResponseEntity<ErrorResponse> {
+        log.warn { "handleMethodArgumentNotValidException: $e" }
+        val fieldError = e.bindingResult.fieldError
+        return ResponseEntity
+            .badRequest()
+            .body(
+                ErrorResponse(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "${fieldError?.field}: ${fieldError?.defaultMessage}"
+                )
+            )
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
+    fun handleMethodArgumentTypeMismatchException(
+        e: MethodArgumentTypeMismatchException
+    ): ResponseEntity<ErrorResponse> {
+        log.warn { "handleMethodArgumentTypeMismatchException: $e" }
+        return ResponseEntity
+            .status(ErrorCode.INVALID_DATE_FORMAT.status)
+            .body(ErrorResponse(ErrorCode.INVALID_DATE_FORMAT))
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingServletRequestParameterException(
+        e: MissingServletRequestParameterException
+    ): ResponseEntity<ErrorResponse> {
+        log.warn { "handleMissingServletRequestParameterException: $e" }
+        return ResponseEntity
+            .status(ErrorCode.MISSING_PARAMETER.status)
+            .body(ErrorResponse(ErrorCode.MISSING_PARAMETER, e.parameterName))
     }
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         log.error { "handleException: $e" }
-        val errorResponse = ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR)
         return ResponseEntity
             .status(ErrorCode.INTERNAL_SERVER_ERROR.status)
-            .body(errorResponse)
+            .body(ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR))
     }
 }

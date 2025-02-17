@@ -354,4 +354,186 @@ class ExpenseControllerTest {
                 .andDo(print())
         }
     }
+
+    @Nested
+    @DisplayName("지출 검색 API")
+    inner class SearchExpense {
+        private val activityId = 1L
+        private val baseExpenseItems = listOf(
+            ExpenseDto.Search.ExpenseItem(
+                id = 1L,
+                name = "점심 식사",
+                amount = BigDecimal("15000.00"),
+                category = ExpenseCategory.FOOD,
+                description = "팀원들과 점심 식사",
+                createdAt = Instant.parse("2024-02-14T12:00:00Z")
+            ),
+            ExpenseDto.Search.ExpenseItem(
+                id = 2L,
+                name = "저녁 회식",
+                amount = BigDecimal("25000.00"),
+                category = ExpenseCategory.FOOD,
+                description = "팀 회식",
+                createdAt = Instant.parse("2024-02-14T18:00:00Z")
+            )
+        )
+
+        private val baseUserExpense = ExpenseDto.Search.UserExpense(
+            userId = testUser.id,
+            userName = testUser.name,
+            expenses = baseExpenseItems,
+            totalAmount = BigDecimal("40000.00")
+        )
+
+        private val baseExpenseDate = LocalDate.of(2024, 2, 14)
+
+        private val baseResponse = ExpenseDto.Search.Response(
+            dailyExpenses = listOf(
+                ExpenseDto.Search.DailyExpense(
+                    date = baseExpenseDate,
+                    userExpenses = listOf(baseUserExpense)
+                )
+            ),
+            metadata = ExpenseDto.Search.SearchMetadata(
+                totalElements = 2,
+                totalPages = 1,
+                currentPage = 0,
+                pageSize = 20,
+                totalAmount = BigDecimal("40000.00")
+            )
+        )
+
+        @Test
+        fun `키워드 없이 검색하면 전체 지출 목록을 반환한다`() {
+            // given
+            val request = ExpenseDto.Search.Request(
+                activityId = activityId,
+                keyword = null,
+                startDate = null,
+                endDate = null,
+                sortOrder = false,
+                page = 0,
+                size = 20
+            )
+            every { expenseService.search(request, any()) } returns baseResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("activityId", request.activityId.toString())
+                    .param("sortOrder", request.sortOrder.toString())
+                    .param("page", request.page.toString())
+                    .param("size", request.size.toString())
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(baseResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.search(request, any()) }
+        }
+
+        @Test
+        fun `키워드로 검색하면 통합 검색 결과를 반환한다`() {
+            // given
+            val request = ExpenseDto.Search.Request(
+                activityId = activityId,
+                keyword = "회식",
+                startDate = null,
+                endDate = null,
+                sortOrder = false,
+                page = 0,
+                size = 20
+            )
+            every { expenseService.search(request, any()) } returns baseResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("activityId", request.activityId.toString())
+                    .param("keyword", request.keyword)
+                    .param("sortOrder", request.sortOrder.toString())
+                    .param("page", request.page.toString())
+                    .param("size", request.size.toString())
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(baseResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.search(request, any()) }
+        }
+
+        @Test
+        fun `키워드와 날짜 범위로 검색하면 필터링된 결과를 반환한다`() {
+            // given
+            val request = ExpenseDto.Search.Request(
+                activityId = activityId,
+                keyword = "식사",
+                startDate = baseExpenseDate.withDayOfMonth(1),
+                endDate = baseExpenseDate.withDayOfMonth(baseExpenseDate.lengthOfMonth()),
+                sortOrder = false,
+                page = 0,
+                size = 20
+            )
+            every { expenseService.search(request, any()) } returns baseResponse
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("activityId", request.activityId.toString())
+                    .param("keyword", request.keyword)
+                    .param("startDate", request.startDate.toString())
+                    .param("endDate", request.endDate.toString())
+                    .param("sortOrder", request.sortOrder.toString())
+                    .param("page", request.page.toString())
+                    .param("size", request.size.toString())
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(baseResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.search(request, any()) }
+        }
+
+        @Test
+        fun `활동 ID 없이 요청하면 400을 응답한다`() {
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("sortOrder", "false")
+                    .param("page", "0")
+                    .param("size", "20")
+            )
+                .andExpect(status().isBadRequest)
+                .andDo(print())
+        }
+
+        @Test
+        fun `시작일이 종료일보다 늦으면 400을 응답한다`() {
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("activityId", activityId.toString())
+                    .param("startDate", "2024-02-28")
+                    .param("endDate", "2024-02-01")
+            )
+                .andExpect(status().isBadRequest)
+                .andDo(print())
+        }
+
+        @Test
+        fun `미래 날짜로 검색하면 400을 응답한다`() {
+            // given
+            val futureDate = LocalDate.now().plusDays(1)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/v1/expense/search")
+                    .param("activityId", activityId.toString())
+                    .param("startDate", futureDate.toString())
+                    .param("endDate", futureDate.toString())
+            )
+                .andExpect(status().isBadRequest)
+                .andDo(print())
+        }
+    }
 }

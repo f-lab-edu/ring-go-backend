@@ -11,6 +11,8 @@ import com.ringgo.domain.expense.repository.ExpenseRepository
 import com.ringgo.domain.member.repository.MemberRepository
 import com.ringgo.domain.user.entity.User
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -176,5 +178,87 @@ class ExpenseService(
             }
 
         return ExpenseDto.Get.Response(dailyExpenses = expenses)
+    }
+
+    @Transactional(readOnly = true)
+    fun search(request: ExpenseDto.Search.Request, user: User): ExpenseDto.Search.Response {
+        // 1. 활동 검증
+        val activity = activityRepository.findByIdOrNull(request.activityId)?.let { it as? ExpenseActivity }
+            ?: throw ApplicationException(ErrorCode.ACTIVITY_NOT_FOUND)
+
+        // 2. 모임 멤버 검증
+        memberRepository.findByMeetingIdAndUserId(activity.meeting.id, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        // 3. 페이징 및 정렬 설정
+        val pageable = if (request.sortOrder) {
+            PageRequest.of(request.page, request.size, Sort.by(Sort.Direction.ASC, "expenseDate", "createdAt"))
+        } else {
+            PageRequest.of(request.page, request.size, Sort.by(Sort.Direction.DESC, "expenseDate", "createdAt"))
+        }
+
+        // 4. 검색 실행
+        val searchResult = expenseRepository.searchExpenses(
+            activityId = request.activityId,
+            keyword = request.keyword,
+            startDate = request.startDate,
+            endDate = request.endDate,
+            pageable = pageable
+        )
+
+        // 5. 총 금액 계산
+        val totalAmount = expenseRepository.calculateTotalAmount(
+            activityId = request.activityId,
+            keyword = request.keyword,
+            startDate = request.startDate,
+            endDate = request.endDate,
+        ) ?: BigDecimal.ZERO
+
+        // 6. 응답 데이터 구성
+        val dailyExpenses = searchResult.content
+            .groupBy { it.expenseDate }
+            .map { (date, expensesForDate) ->
+                ExpenseDto.Search.DailyExpense(
+                    date = date,
+                    userExpenses = expensesForDate
+                        .groupBy { it.creator }
+                        .map { (user, userExpenses) ->
+                            ExpenseDto.Search.UserExpense(
+                                userId = user.id,
+                                userName = user.name,
+                                expenses = userExpenses.map { expense ->
+                                    ExpenseDto.Search.ExpenseItem(
+                                        id = expense.id,
+                                        name = expense.name,
+                                        amount = expense.amount,
+                                        category = expense.category,
+                                        description = expense.description,
+                                        createdAt = expense.createdAt
+                                    )
+                                },
+                                totalAmount = userExpenses.sumOf { it.amount }
+                            )
+                        }
+                        .sortedBy { it.userName }
+                )
+            }
+            .let { dailyExpenses ->
+                if (request.sortOrder) {
+                    dailyExpenses.sortedBy { it.date }
+                } else {
+                    dailyExpenses.sortedByDescending { it.date }
+                }
+            }
+
+        return ExpenseDto.Search.Response(
+            dailyExpenses = dailyExpenses,
+            metadata = ExpenseDto.Search.SearchMetadata(
+                totalElements = searchResult.totalElements,
+                totalPages = searchResult.totalPages,
+                currentPage = searchResult.number,
+                pageSize = searchResult.size,
+                totalAmount = totalAmount
+            )
+        )
     }
 }
