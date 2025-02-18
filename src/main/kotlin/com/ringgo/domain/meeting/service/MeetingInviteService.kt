@@ -6,7 +6,6 @@ import com.ringgo.domain.meeting.config.MeetingInviteConfig
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.meeting.entity.MeetingInvite
-import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.meeting.repository.MeetingInviteRepository
 import com.ringgo.domain.meeting.repository.MeetingRepository
 import com.ringgo.domain.member.entity.Member
@@ -16,7 +15,6 @@ import com.ringgo.domain.user.entity.User
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -52,7 +50,7 @@ class MeetingInviteService(
         val invite = meetingInviteRepository.findByCode(code)
             ?: throw ApplicationException(ErrorCode.INVALID_INVITE_LINK)
 
-        validateInviteValidity(invite)
+        invite.validateValidity()
         checkExistingMembership(invite.meeting, user)
         checkMemberLimit(invite.meeting)
 
@@ -63,16 +61,6 @@ class MeetingInviteService(
                 role = MemberRole.MEMBER
             )
         )
-    }
-
-    private fun validateInviteValidity(invite: MeetingInvite) {
-        when {
-            Instant.now().isAfter(invite.expiredAt) ->
-                throw ApplicationException(ErrorCode.EXPIRED_INVITE_LINK)
-
-            invite.meeting.status != MeetingStatus.ACTIVE ->
-                throw ApplicationException(ErrorCode.INACTIVE_MEETING)
-        }
     }
 
     private fun checkExistingMembership(meeting: Meeting, user: User) {

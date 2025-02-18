@@ -2,6 +2,7 @@ package com.ringgo.domain.meeting.entity
 
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
+import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.member.repository.MemberRepository
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
@@ -34,6 +35,19 @@ class MeetingInvite(
     @Column(nullable = false)
     val expiredAt: Instant,
 ) {
+    fun validateValidity() {
+        when {
+            isExpired() -> throw ApplicationException(ErrorCode.EXPIRED_INVITE_LINK)
+            !isMeetingActive() -> throw ApplicationException(ErrorCode.INACTIVE_MEETING)
+        }
+    }
+
+    private fun isExpired(): Boolean =
+        Instant.now().isAfter(expiredAt)
+
+    private fun isMeetingActive(): Boolean =
+        meeting.status == MeetingStatus.ACTIVE
+
     companion object {
         private const val CODE_LENGTH = 15
 
