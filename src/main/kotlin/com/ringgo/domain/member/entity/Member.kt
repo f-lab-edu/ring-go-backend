@@ -4,6 +4,7 @@ import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import com.ringgo.domain.user.entity.User
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
@@ -42,6 +43,9 @@ class Member(
     @Column(nullable = false, length = 20)
     var role: MemberRole,
 
+    @Enumerated(EnumType.STRING)
+    var status: MemberStatus = MemberStatus.ACTIVE,
+
     @Column(name = "joined_at", nullable = false)
     val joinedAt: Instant = Instant.now(),
 ) {
@@ -62,5 +66,9 @@ class Member(
             log.warn { "User is not creator - memberId: $id, userId: ${user.id}, userRole: $role" }
             throw ApplicationException(ErrorCode.NOT_MEETING_CREATOR)
         }
+    }
+
+    fun updateStatus(newStatus: MemberStatus) {
+        this.status = newStatus
     }
 }
