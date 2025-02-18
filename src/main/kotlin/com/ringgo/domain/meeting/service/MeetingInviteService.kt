@@ -30,12 +30,13 @@ class MeetingInviteService(
         val meeting = meetingRepository.findByIdOrNull(id)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
+        validateMemberLimit(meeting)
+
         val invite = meetingInviteRepository.save(
             MeetingInvite.create(
                 meeting = meeting,
                 creator = user,
-                expirationDays = meetingInviteConfig.inviteExpirationDays,
-                memberRepository = memberRepository
+                expirationDays = meetingInviteConfig.inviteExpirationDays
             )
         )
 
@@ -51,8 +52,8 @@ class MeetingInviteService(
             ?: throw ApplicationException(ErrorCode.INVALID_INVITE_LINK)
 
         invite.validateValidity()
-        checkExistingMembership(invite.meeting, user)
-        checkMemberLimit(invite.meeting)
+        validateExistingMember(invite.meeting, user)
+        validateMemberLimit(invite.meeting)
 
         return memberRepository.save(
             Member(
@@ -63,13 +64,13 @@ class MeetingInviteService(
         )
     }
 
-    private fun checkExistingMembership(meeting: Meeting, user: User) {
+    private fun validateExistingMember(meeting: Meeting, user: User) {
         if (memberRepository.existsByMeetingIdAndUserId(meeting.id, user.id)) {
             throw ApplicationException(ErrorCode.ALREADY_JOINED_MEMBER)
         }
     }
 
-    private fun checkMemberLimit(meeting: Meeting) {
+    private fun validateMemberLimit(meeting: Meeting) {
         val memberCount = memberRepository.countByMeetingId(meeting.id)
         if (memberCount >= meetingInviteConfig.maxMembers) {
             throw ApplicationException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
