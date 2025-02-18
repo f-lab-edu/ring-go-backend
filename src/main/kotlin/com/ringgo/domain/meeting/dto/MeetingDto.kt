@@ -1,6 +1,7 @@
 package com.ringgo.domain.meeting.dto
 
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -86,6 +87,55 @@ class MeetingDto {
                 example = "2024-03-01T12:34:56Z"
             )
             val expiredAt: String
+        )
+
+        @Schema(description = "초대 링크 참여 응답")
+        data class JoinResponse(
+            @Schema(description = "모임 ID")
+            val meetingId: UUID,
+
+            @Schema(description = "모임 이름")
+            val meetingName: String
+        )
+    }
+
+    @Schema(description = "모임원 목록 조회")
+    class Member {
+        @Schema(description = "모임원 목록 조회 응답")
+        data class Response(
+            @Schema(description = "모임원 ID")
+            val id: UUID,
+
+            @Schema(description = "사용자 ID")
+            val userId: UUID,
+
+            @Schema(description = "사용자 이름")
+            val name: String,
+
+            @Schema(description = "사용자 이메일")
+            val email: String,
+
+            @Schema(description = "모임원 역할")
+            val role: String,
+
+            @Schema(description = "가입일시")
+            val joinedAt: Instant,
+        )
+    }
+
+    @Schema(description = "모임원 내보내기")
+    class KickMember {
+        @Schema(description = "모임원 내보내기 응답")
+        data class Response(
+            @Schema(description = "모임원 ID")
+            val id: UUID,
+
+            @Schema(
+                description = "변경된 상태",
+                example = "KICKED",
+                implementation = MemberStatus::class
+            )
+            val status: MemberStatus
         )
     }
 }
