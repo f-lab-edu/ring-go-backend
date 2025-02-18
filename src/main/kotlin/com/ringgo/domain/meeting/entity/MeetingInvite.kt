@@ -1,6 +1,6 @@
 package com.ringgo.domain.meeting.entity
 
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.member.repository.MemberRepository
 import com.ringgo.domain.user.entity.User
@@ -56,7 +56,7 @@ class MeetingInvite(
         private fun validateMemberLimit(meeting: Meeting, memberRepository: MemberRepository) {
             val memberCount = memberRepository.countByMeetingId(meeting.id)
             if (memberCount >= 5) {
-                throw BusinessException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
+                throw ApplicationException(ErrorCode.MEETING_MEMBER_LIMIT_EXCEEDED)
             }
         }
 

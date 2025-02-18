@@ -1,6 +1,6 @@
 package com.ringgo.domain.meeting.config
 
-import com.ringgo.common.exception.BusinessException
+import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import org.springframework.boot.context.properties.ConfigurationProperties
 
@@ -11,6 +11,6 @@ data class MeetingInviteConfig(
     var maxMembers: Int = 5,
 ) {
     init {
-        if (baseUrl.isBlank()) throw BusinessException(ErrorCode.INVALID_BASE_URL)
+        if (baseUrl.isBlank()) throw ApplicationException(ErrorCode.INVALID_BASE_URL)
     }
 }

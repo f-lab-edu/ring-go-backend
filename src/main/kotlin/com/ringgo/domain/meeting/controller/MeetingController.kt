@@ -5,6 +5,7 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -98,5 +99,42 @@ class MeetingController(
             meetingId = member.meeting.id,
             meetingName = member.meeting.name
         )
+    }
+
+    @Operation(summary = "모임원 목록 조회", description = "특정 모임의 모든 모임원 목록을 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "모임원 목록 조회 성공"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "모임을 찾을 수 없음")
+        ]
+    )
+    @GetMapping("/{id}/members")
+    fun getMembers(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal user: User
+    ): List<MeetingDto.Member.Response> {
+        return meetingService.getMembers(id, user)
+    }
+
+    @Operation(summary = "모임원 내보내기", description = "특정 모임원을 모임에서 내보냅니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "204",
+                description = "모임원 내보내기 성공",
+            ),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "모임 또는 모임원을 찾을 수 없음")
+        ]
+    )
+    @DeleteMapping("/{meetingId}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun kickMember(
+        @PathVariable meetingId: UUID,
+        @PathVariable memberId: UUID,
+        @AuthenticationPrincipal user: User
+    ) {
+        meetingService.kickMember(meetingId, memberId, user)
     }
 }
