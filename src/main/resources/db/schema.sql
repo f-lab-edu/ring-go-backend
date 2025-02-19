@@ -228,7 +228,7 @@ CREATE TABLE notification
 
 
 -- 16. 모임 초대 테이블
-CREATE TABLE invite_links
+CREATE TABLE meeting_invite
 (
     id         BIGINT      NOT NULL AUTO_INCREMENT COMMENT '초대 링크 ID',
     meeting_id UUID        NOT NULL COMMENT '모임 ID',
@@ -238,9 +238,9 @@ CREATE TABLE invite_links
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
     updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_invite_links_code UNIQUE (code),
-    CONSTRAINT fk_invite_links_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
-    CONSTRAINT fk_invite_links_creator FOREIGN KEY (creator_id) REFERENCES user (id)
+    CONSTRAINT uk_meeting_invite_code UNIQUE (code),
+    CONSTRAINT fk_meeting_invite_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
+    CONSTRAINT fk_meeting_invite_creator FOREIGN KEY (creator_id) REFERENCES user (id)
 ) COMMENT '초대 링크';
 
 -- 인덱스 생성
