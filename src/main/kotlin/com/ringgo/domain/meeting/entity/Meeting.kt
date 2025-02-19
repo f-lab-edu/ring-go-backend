@@ -2,7 +2,6 @@ package com.ringgo.domain.meeting.entity
 
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.user.entity.User
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -32,10 +31,6 @@ class Meeting(
     @JoinColumn(name = "creator_id", nullable = false)
     val creator: User,
 ) {
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     lateinit var createdAt: Instant
