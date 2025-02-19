@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Entity
-@Table(name = "invite_links")
+@Table(name = "meeting_invite")
 @EntityListeners(AuditingEntityListener::class)
 class MeetingInvite(
     @Id
