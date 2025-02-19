@@ -25,7 +25,6 @@ class MeetingInviteService(
     private val memberRepository: MemberRepository,
     private val meetingInviteConfig: MeetingInviteConfig
 ) {
-    @Transactional
     fun createInviteLink(id: UUID, user: User): MeetingDto.InviteLink.CreateResponse {
         val meeting = meetingRepository.findByIdOrNull(id)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
