@@ -3,6 +3,7 @@ package com.ringgo.domain.meeting.entity
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
+import com.ringgo.domain.meeting.vo.Code
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
@@ -10,7 +11,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 @Entity
 @Table(name = "meeting_invite")
@@ -24,8 +24,8 @@ class MeetingInvite(
     @JoinColumn(name = "meeting_id", nullable = false)
     val meeting: Meeting,
 
-    @Column(nullable = false, length = 15, unique = true)
-    val code: String,
+    @Embedded
+    val code: Code,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
@@ -48,8 +48,6 @@ class MeetingInvite(
         meeting.status == MeetingStatus.ACTIVE
 
     companion object {
-        private const val CODE_LENGTH = 15
-
         fun create(
             meeting: Meeting,
             creator: User,
@@ -58,19 +56,9 @@ class MeetingInvite(
             return MeetingInvite(
                 meeting = meeting,
                 creator = creator,
-                code = generateUniqueCode(generateBaseCode()),
+                code = Code.generate(),
                 expiredAt = Instant.now().plus(expirationDays, ChronoUnit.DAYS)
             )
-        }
-
-        private fun generateBaseCode() =
-            (UUID.randomUUID().toString() + System.nanoTime())
-                .replace("-", "")
-                .take(CODE_LENGTH)
-
-        private fun generateUniqueCode(base: String, attempt: Int = 0): String {
-            val suffix = if (attempt > 0) attempt.toString() else ""
-            return base.take(CODE_LENGTH - suffix.length) + suffix
         }
     }
 
