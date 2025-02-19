@@ -249,5 +249,3 @@ CREATE INDEX idx_meeting_creator ON meeting (creator_id);
 CREATE INDEX idx_member_user ON member (user_id);
 CREATE INDEX idx_member_meeting ON member (meeting_id);
 CREATE INDEX idx_expense_creator ON expense (creator_id);
-CREATE INDEX idx_activity_meeting ON activity (meeting_id);
-CREATE INDEX idx_invite_links_expired_at ON invite_links (expired_at);
