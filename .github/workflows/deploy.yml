@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up JDK 21
       uses: actions/setup-java@v3
@@ -47,6 +47,7 @@ jobs:
           docker run -d --name ringgo \
             --add-host="${{ secrets.SPRING_DATA_REDIS_HOST }}:${{ secrets.REDIS_IP }}" \
             -p 8080:8080 \
+            -e SPRING_PROFILES_ACTIVE=dev \
             -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
             -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
             -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \

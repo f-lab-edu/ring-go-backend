@@ -12,8 +12,9 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
+
+private val log = KotlinLogging.logger {}
 
 @Entity
 @Table(
@@ -49,10 +50,6 @@ class Member(
     @Column(name = "joined_at", nullable = false)
     val joinedAt: Instant = Instant.now(),
 ) {
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     lateinit var createdAt: Instant
