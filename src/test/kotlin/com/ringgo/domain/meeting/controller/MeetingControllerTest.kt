@@ -17,6 +17,7 @@ import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
@@ -45,6 +46,9 @@ class MeetingControllerTest {
 
     @Autowired
     private lateinit var objectMapper: ObjectMapper
+
+    @Value("\${app.meeting.invite.base-url}")
+    private lateinit var baseUrl: String
 
     // TestUser fixture 사용
     private val testUser = TestUser.create()
@@ -197,9 +201,10 @@ class MeetingControllerTest {
             @Test
             fun `초대 링크 생성 성공시 201을 응답한다`() {
                 // given
+                val testCode = UUID.randomUUID().toString().replace("-", "").take(15)
                 val expectedResponse = MeetingDto.Invite.Create.Response(
-                    inviteUrl = "http://localhost:8080/invite/test-code",
-                    expiredAt = "2025-02-09T10:00:00"
+                    inviteUrl = "$baseUrl/meeting/invite/$testCode",
+                    expiredAt = "2025-02-09T10:00:00Z"
                 )
                 every { meetingInviteService.createInviteLink(meetingId, any()) } returns expectedResponse
 
@@ -432,7 +437,7 @@ class MeetingControllerTest {
                 private val memberId = UUID.randomUUID()
 
                 @Test
-                fun `모임원 내보내기 성공시 200을 응답한다`() {
+                fun `모임원 내보내기 성공시 204를 응답한다`() {
                     // given
                     val expectedResponse = MeetingDto.Member.Kick.Response(
                         id = memberId,
@@ -442,11 +447,10 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
-                        .andExpect(status().isOk)
-                        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                        .andExpect(status().isNoContent)
                         .andDo(print())
 
                     verify(exactly = 1) { meetingService.kickMember(meetingId, memberId, any()) }
@@ -461,7 +465,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isForbidden)
@@ -477,7 +481,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isBadRequest)
@@ -493,7 +497,7 @@ class MeetingControllerTest {
 
                     // when & then
                     mockMvc.perform(
-                        patch("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
+                        delete("/api/v1/meeting/{meetingId}/members/{memberId}", meetingId, memberId)
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isNotFound)
