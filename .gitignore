@@ -39,5 +39,5 @@ out/
 ### Kotlin ###
 .kotlin
 
-### Application Config ###
-src/main/resources/application-*.yml
+### structure ###
+structure.txt

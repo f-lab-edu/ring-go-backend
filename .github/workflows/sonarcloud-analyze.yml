@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -24,10 +24,8 @@ jobs:
           SONAR_PROJECT_KEY="${ORG_NAME}_${REPO_NAME}"
           echo "SONAR_PROJECT_KEY=$SONAR_PROJECT_KEY" >> $GITHUB_ENV 
 
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@master
-        id: analyze-sonarcloud
-        continue-on-error: true
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v4.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_BOT }}
           SONAR_TOKEN: ${{ secrets.SECRET_SONARQUBE }}
@@ -35,5 +33,6 @@ jobs:
           args:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=f-lab-edu-1
+            -Dsonar.cpd.exclusions=**/resources/db/**
 
           
