@@ -58,8 +58,4 @@ class Expense(
 
     @Column
     var deletedAt: Instant? = null
-
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
 }

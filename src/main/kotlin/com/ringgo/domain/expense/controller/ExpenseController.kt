@@ -13,16 +13,14 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
+private val log = KotlinLogging.logger {}
+
 @Tag(name = "Expense", description = "지출 API")
 @RestController
 @RequestMapping("/api/v1/expense")
 class ExpenseController(
     private val expenseService: ExpenseService
 ) {
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
-
     @Operation(summary = "지출 생성", description = "새로운 지출을 생성합니다.")
     @ApiResponses(
         value = [
