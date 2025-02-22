@@ -72,6 +72,7 @@ CREATE TABLE activity
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
     PRIMARY KEY (id),
+    CONSTRAINT uk_activity_meeting_type UNIQUE (meeting_id, type),
     CONSTRAINT fk_activity_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
     CONSTRAINT fk_activity_creator FOREIGN KEY (creator_id) REFERENCES user (id)
 ) COMMENT ='활동';
