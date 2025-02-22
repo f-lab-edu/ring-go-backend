@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDate
 
+private val log = KotlinLogging.logger {}
+
 @Service
 @Transactional(readOnly = true)
 class ExpenseService(
@@ -24,11 +26,6 @@ class ExpenseService(
     private val activityRepository: ActivityRepository,
     private val memberRepository: MemberRepository
 ) {
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
-
-    @Transactional
     fun create(request: ExpenseDto.Create.Request, user: User): ExpenseDto.Create.Response {
         // 1. 활동 조회 및 검증
         val activity = activityRepository.findByIdOrNull(request.activityId)?.let { it as? ExpenseActivity }
