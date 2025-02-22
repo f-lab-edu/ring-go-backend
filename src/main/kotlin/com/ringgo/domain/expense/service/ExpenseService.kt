@@ -123,4 +123,54 @@ class ExpenseService(
         expense.delete(user.id)
         log.info { "Expense deleted: $id" }
     }
+
+    fun list(request: ExpenseDto.Get.Request, user: User): ExpenseDto.Get.Response {
+        // 1. 활동 검증
+        val activity = activityRepository.findByIdOrNull(request.activityId)?.let { it as? ExpenseActivity }
+            ?: throw ApplicationException(ErrorCode.ACTIVITY_NOT_FOUND)
+
+        // 2. 모임 멤버 검증
+        memberRepository.findByMeetingIdAndUserId(activity.meeting.id, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        // 3. 지출 목록 조회 및 변환
+        val expenses = expenseRepository.findAllByActivityIdWithCreator(request.activityId)
+            .groupBy { it.expenseDate }
+            .map { (date, expensesForDate) ->
+                ExpenseDto.Get.DailyExpense(
+                    date = date,
+                    userExpenses = expensesForDate
+                        .groupBy { it.creator }
+                        .map { (user, userExpenses) ->
+                            ExpenseDto.Get.UserExpense(
+                                userId = user.id,
+                                userName = user.name,
+                                expenses = userExpenses
+                                    .sortedBy { it.createdAt }
+                                    .map { expense ->
+                                        ExpenseDto.Get.ExpenseItem(
+                                            id = expense.id,
+                                            name = expense.name,
+                                            amount = expense.amount,
+                                            category = expense.category,
+                                            description = expense.description,
+                                            createdAt = expense.createdAt,
+                                        )
+                                    },
+                                totalAmount = userExpenses.sumOf { it.amount }
+                            )
+                        }
+                        .sortedBy { it.userName }
+                )
+            }
+            .let { dailyExpenses ->
+                if (request.sortOrder) {
+                    dailyExpenses.sortedBy { it.date }
+                } else {
+                    dailyExpenses.sortedByDescending { it.date }
+                }
+            }
+
+        return ExpenseDto.Get.Response(dailyExpenses = expenses)
+    }
 }
