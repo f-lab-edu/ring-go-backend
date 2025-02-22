@@ -65,9 +65,10 @@ CREATE TABLE member
 -- 5. 활동 테이블
 CREATE TABLE activity
 (
-    id         BIGINT       NOT NULL COMMENT '활동 ID',
-    meeting_id UUID         NOT NULL COMMENT '모임 ID',
+    id         BIGINT       NOT NULL AUTO_INCREMENT COMMENT '활동 ID',
     type       VARCHAR(20)  NOT NULL COMMENT '활동 유형',
+    status     VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE' COMMENT '활동 상태(ACTIVE/ENDED/DELETED)',
+    meeting_id UUID         NOT NULL COMMENT '모임 ID',
     creator_id UUID         NOT NULL COMMENT '생성자 ID',
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
@@ -108,7 +109,7 @@ CREATE TABLE event_participation
 -- 8. 지출 테이블
 CREATE TABLE expense
 (
-    id           BIGINT          NOT NULL COMMENT '지출 ID',
+    id           BIGINT          NOT NULL AUTO_INCREMENT COMMENT '지출 ID',
     activity_id  BIGINT          NOT NULL COMMENT '활동 ID',
     creator_id   UUID            NOT NULL COMMENT '작성자 ID',
     amount       DECIMAL(10, 2)  NOT NULL COMMENT '금액',

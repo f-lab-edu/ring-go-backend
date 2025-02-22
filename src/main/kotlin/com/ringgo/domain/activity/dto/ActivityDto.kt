@@ -1,5 +1,6 @@
 package com.ringgo.domain.activity.dto
 
+import com.ringgo.domain.activity.entity.enums.ActivityStatus
 import com.ringgo.domain.activity.entity.enums.ActivityType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
@@ -23,6 +24,32 @@ class ActivityDto {
         data class Response(
             @Schema(description = "활동 ID")
             val id: Long
+        )
+    }
+
+    @Schema(description = "활동 상태 변경")
+    class UpdateStatus {
+        @Schema(description = "활동 상태 변경 요청", name = "ActivityStatusUpdateRequest")
+        data class Request(
+            @Schema(
+                description = "변경할 상태",
+                example = "ENDED",
+                implementation = ActivityStatus::class
+            )
+            val status: ActivityStatus
+        )
+
+        @Schema(description = "활동 상태 변경 응답", name = "ActivityStatusUpdateResponse")
+        data class Response(
+            @Schema(description = "활동 ID")
+            val id: Long,
+
+            @Schema(
+                description = "종료된 상태",
+                example = "ENDED",
+                implementation = ActivityStatus::class
+            )
+            val status: ActivityStatus
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.ringgo.domain.activity.entity
 
+import com.ringgo.domain.activity.entity.enums.ActivityStatus
 import com.ringgo.domain.activity.entity.enums.ActivityType
 import com.ringgo.domain.meeting.entity.Meeting
 import com.ringgo.domain.user.entity.User
@@ -26,6 +27,10 @@ abstract class Activity(
     @Column(name = "type", insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     val type: ActivityType,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    var status: ActivityStatus = ActivityStatus.ACTIVE
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +44,9 @@ abstract class Activity(
     @LastModifiedDate
     @Column(nullable = false)
     lateinit var updatedAt: Instant
+
+    fun updateStatus(newStatus: ActivityStatus) {
+        status.validateTransitionTo(newStatus)
+        this.status = newStatus
+    }
 }
