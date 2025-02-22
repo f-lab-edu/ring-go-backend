@@ -61,7 +61,11 @@ class MeetingService(
     }
 
     @Transactional
-    fun updateStatus(meetingId: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
+    fun updateStatus(
+        meetingId: UUID,
+        request: MeetingDto.UpdateStatus.Request,
+        user: User
+    ): MeetingDto.UpdateStatus.Response {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
