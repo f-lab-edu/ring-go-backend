@@ -5,13 +5,14 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
@@ -127,13 +128,14 @@ class MeetingController(
             ApiResponse(responseCode = "404", description = "모임 또는 모임원을 찾을 수 없음")
         ]
     )
-    @PatchMapping("/{meetingId}/members/{memberId}")
-    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/{meetingId}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun kickMember(
         @PathVariable meetingId: UUID,
         @PathVariable memberId: UUID,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.Member.Kick.Response {
-        return meetingService.kickMember(meetingId, memberId, user)
+    ) {
+        meetingService.kickMember(meetingId, memberId, user)
     }
+
 }

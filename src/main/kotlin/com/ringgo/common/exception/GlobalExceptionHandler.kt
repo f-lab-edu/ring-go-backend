@@ -7,13 +7,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
+private val log = KotlinLogging.logger {}
+
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
-
     @ExceptionHandler(ApplicationException::class)
     fun handleApplicationException(e: ApplicationException) = ResponseEntity
         .status(e.errorCode.status)
