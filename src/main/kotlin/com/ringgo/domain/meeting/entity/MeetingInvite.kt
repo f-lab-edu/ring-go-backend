@@ -2,7 +2,8 @@ package com.ringgo.domain.meeting.entity
 
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
-import com.ringgo.domain.member.repository.MemberRepository
+import com.ringgo.domain.meeting.entity.enums.MeetingStatus
+import com.ringgo.domain.meeting.vo.Code
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
@@ -10,7 +11,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 @Entity
 @Table(name = "meeting_invite")
