@@ -9,11 +9,12 @@ enum class ErrorCode(
 ) {
     // Common
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "잘못된 입력값입니다"),
-    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C002", "지원하지 않는 메서드입니다"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 오류가 발생했습니다"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 오류가 발생했습니다"),
+    MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "C003", "필수 파라미터가 누락되었습니다"),
+    INVALID_PARAMETER_VALUE(HttpStatus.BAD_REQUEST, "C004", "파라미터 값이 올바르지 않습니다"),
 
-    // Configuration 관련 에러 추가
-    INVALID_BASE_URL(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "base-url 설정이 잘못되었습니다"),
+    // Configuration 관련
+    INVALID_BASE_URL(HttpStatus.INTERNAL_SERVER_ERROR, "C005", "base-url 설정이 잘못되었습니다"),
 
     // 모임 관련 에러
     MEETING_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "모임을 찾을 수 없습니다"),
@@ -42,4 +43,7 @@ enum class ErrorCode(
     INVALID_EXPENSE_AMOUNT(HttpStatus.BAD_REQUEST, "E002", "올바르지 않은 지출 금액입니다"),
     INVALID_EXPENSE_CATEGORY(HttpStatus.BAD_REQUEST, "E003", "올바르지 않은 지출 카테고리입니다"),
     NOT_EXPENSE_CREATOR(HttpStatus.FORBIDDEN, "E004", "지출 기록 작성자만 가능합니다"),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "E005", "종료일이 시작일보다 빠를 수 없습니다"),
+    INVALID_FUTURE_DATE(HttpStatus.BAD_REQUEST, "E006", "미래 날짜는 입력할 수 없습니다"),
+    INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "E007", "날짜 형식(YYYY-MM-DD)이 올바르지 않거나 존재하지 않는 날짜입니다")
 }

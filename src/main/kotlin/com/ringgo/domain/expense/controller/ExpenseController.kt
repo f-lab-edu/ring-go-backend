@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
@@ -93,5 +95,43 @@ class ExpenseController(
     ): ExpenseDto.Get.Response {
         log.info { "List expense request: $request" }
         return expenseService.list(request, user)
+    }
+
+    @Operation(summary = "지출 검색", description = "지출을 검색합니다. 검색어는 지출명, 사용자명, 금액, 설명을 통합 검색합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "검색 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "활동을 찾을 수 없음")
+        ]
+    )
+    @GetMapping("/search")
+    fun search(
+        @RequestParam(name = "activityId") activityId: Long,
+        @RequestParam(name = "keyword", required = false) keyword: String?,
+        @RequestParam(name = "startDate", required = false)
+        @DateTimeFormat(pattern = "yyyy-MM-dd") startDate: LocalDate?,
+        @RequestParam(name = "endDate", required = false)
+        @DateTimeFormat(pattern = "yyyy-MM-dd") endDate: LocalDate?,
+        @RequestParam(name = "sortOrder", required = false, defaultValue = "false") sortOrder: Boolean,
+        @RequestParam(name = "page", required = false, defaultValue = "0") page: Int,
+        @RequestParam(name = "size", required = false, defaultValue = "20") size: Int,
+        @AuthenticationPrincipal user: User
+    ): ExpenseDto.Search.Response {
+        log.info { "Search expense request: activityId=$activityId, keyword=$keyword, startDate=$startDate, endDate=$endDate" }
+
+        val request = ExpenseDto.Search.Request(
+            activityId = activityId,
+            keyword = keyword,
+            startDate = startDate,
+            endDate = endDate,
+            sortOrder = sortOrder,
+            page = page,
+            size = size
+        )
+        request.validate()
+
+        return expenseService.search(request, user)
     }
 }
