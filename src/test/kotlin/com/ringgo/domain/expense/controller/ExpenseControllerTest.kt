@@ -9,6 +9,8 @@ import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.expense.service.ExpenseService
 import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,8 +20,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -184,6 +185,67 @@ class ExpenseControllerTest {
             )
                 .andExpect(status().isForbidden)
                 .andDo(print())
+        }
+    }
+
+    @Nested
+    @DisplayName("지출 삭제 API")
+    inner class DeleteExpense {
+        private val expenseId = 1L
+
+        @Test
+        fun `모임원의 지출 삭제 요청시 204를 응답한다`() {
+            // given
+            every { expenseService.delete(expenseId, testUser) } just runs
+
+            // when & then
+            mockMvc.perform(delete("/api/v1/expense/$expenseId"))
+                .andExpect(status().isNoContent)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.delete(expenseId, testUser) }
+        }
+
+        @Test
+        fun `삭제 대상 지출이 없는 경우 404를 응답한다`() {
+            // given
+            every { expenseService.delete(expenseId, testUser) } throws
+                    ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
+
+            // when & then
+            mockMvc.perform(delete("/api/v1/expense/$expenseId"))
+                .andExpect(status().isNotFound)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.delete(expenseId, testUser) }
+        }
+
+        @Test
+        fun `다른 모임원의 지출 삭제 요청시 403을 응답한다`() {
+            // given
+            every { expenseService.delete(expenseId, testUser) } throws
+                    ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+
+            // when & then
+            mockMvc.perform(delete("/api/v1/expense/$expenseId"))
+                .andExpect(status().isForbidden)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.delete(expenseId, testUser) }
+        }
+
+        @Test
+        fun `종료된 활동의 지출 삭제 요청시 400을 응답한다`() {
+            // given
+            every { expenseService.delete(expenseId, testUser) } throws
+                    ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
+
+            // when & then
+            mockMvc.perform(delete("/api/v1/expense/$expenseId"))
+                .andExpect(status().isBadRequest)
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.delete(expenseId, testUser) }
         }
     }
 }

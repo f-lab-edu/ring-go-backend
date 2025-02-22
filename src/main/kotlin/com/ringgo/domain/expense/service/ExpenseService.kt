@@ -98,4 +98,29 @@ class ExpenseService(
             updatedAt = expense.updatedAt
         )
     }
+
+    @Transactional
+    fun delete(id: Long, user: User) {
+        // 1. 지출 조회
+        val expense = expenseRepository.findByIdOrNull(id)
+            ?: throw ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
+
+        // 2. 모임 멤버 검증
+        memberRepository.findByMeetingIdAndUserId(expense.activity.meeting.id, user.id)
+            ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
+
+        // 3. 작성자 검증
+        if (expense.creator.id != user.id) {
+            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+        }
+
+        // 4. 활동 상태 검증
+        if (expense.activity.status != ActivityStatus.ACTIVE) {
+            throw ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
+        }
+
+        // 5. 지출 삭제 처리
+        expense.delete(user.id)
+        log.info { "Expense deleted: $id" }
+    }
 }

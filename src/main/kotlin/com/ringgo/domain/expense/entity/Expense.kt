@@ -3,6 +3,7 @@ package com.ringgo.domain.expense.entity
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.activity.entity.ExpenseActivity
+import com.ringgo.domain.activity.entity.enums.ActivityStatus
 import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
@@ -72,5 +73,18 @@ class Expense(
         request.category?.let { category = it }
         request.description?.let { description = it }
         request.expenseDate?.let { expenseDate = it }
+    }
+
+    fun delete(requesterId: UUID) {
+        if (creator.id != requesterId) {
+            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+        }
+
+        if (activity.status != ActivityStatus.ACTIVE) {
+            throw ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
+        }
+
+        isDeleted = true
+        deletedAt = Instant.now()
     }
 }
