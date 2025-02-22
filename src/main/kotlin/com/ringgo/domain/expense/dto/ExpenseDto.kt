@@ -8,7 +8,6 @@ import jakarta.validation.constraints.*
 import org.springframework.format.annotation.DateTimeFormat
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import java.util.*
 
 class ExpenseDto {
@@ -40,7 +39,7 @@ class ExpenseDto {
 
             @field:NotNull(message = "지출일자는 필수입니다")
             @Schema(description = "지출일자", example = "2025-02-14T12:00:00Z")
-            val expenseDate: LocalDate
+            val expenseDate: Instant
         )
 
         @Schema(description = "지출 생성 응답", name = "ExpenseCreateResponse")
@@ -72,7 +71,7 @@ class ExpenseDto {
             val description: String?,
 
             @Schema(description = "지출일자")
-            val expenseDate: LocalDate?
+            val expenseDate: Instant?
         )
 
         @Schema(description = "지출 수정 응답", name = "ExpenseUpdateResponse")
@@ -105,7 +104,7 @@ class ExpenseDto {
         @Schema(description = "날짜별 지출 내역", name = "ExpenseGetDailyExpense")
         data class DailyExpense(
             @Schema(description = "날짜", example = "2024-02-15")
-            val date: LocalDate,
+            val date: Instant,
 
             @Schema(description = "사용자별 지출 내역")
             val userExpenses: List<UserExpense>

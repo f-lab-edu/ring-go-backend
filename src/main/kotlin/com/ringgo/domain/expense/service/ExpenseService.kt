@@ -17,7 +17,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.LocalDate
+import java.time.Instant
 
 private val log = KotlinLogging.logger {}
 
@@ -48,7 +48,7 @@ class ExpenseService(
         }
 
         // 5. 날짜 검증
-        if (request.expenseDate.isAfter(LocalDate.now())) {
+        if (request.expenseDate.isAfter(Instant.now())) {
             throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
         }
 
@@ -86,7 +86,7 @@ class ExpenseService(
         }
 
         request.expenseDate?.let {
-            if (it.isAfter(LocalDate.now())) {
+            if (it.isAfter(Instant.now())) {
                 throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
             }
         }
@@ -126,7 +126,6 @@ class ExpenseService(
         log.info { "Expense deleted: $id" }
     }
 
-    @Transactional(readOnly = true)
     fun list(request: ExpenseDto.Get.Request, user: User): ExpenseDto.Get.Response {
         // 1. 활동 검증
         val activity = activityRepository.findByIdOrNull(request.activityId)?.let { it as? ExpenseActivity }
