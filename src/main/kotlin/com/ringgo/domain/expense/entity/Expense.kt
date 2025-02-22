@@ -14,7 +14,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import java.util.*
 
 @Entity
@@ -48,7 +47,7 @@ class Expense(
     var description: String?,
 
     @Column(nullable = false)
-    var expenseDate: LocalDate
+    var expenseDate: Instant
 ) {
     @CreatedDate
     @Column(nullable = false, updatable = false)

@@ -26,7 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 
 @WebMvcTest(ExpenseController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -67,7 +66,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("10000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = LocalDate.parse("2025-02-14")
+            expenseDate = Instant.parse("2025-02-14")
         )
 
         @Test
@@ -131,7 +130,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("66000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = LocalDate.parse("2025-02-14")
+            expenseDate = Instant.parse("2025-02-14")
         )
 
         @Test
@@ -259,7 +258,7 @@ class ExpenseControllerTest {
             sortOrder = false
         )
 
-        private val now = LocalDate.of(2025, 2, 14)
+        private val now = Instant.parse("2025-02-14T00:00:00Z")
         private val expenseItems = listOf(
             ExpenseDto.Get.ExpenseItem(
                 id = 1L,
