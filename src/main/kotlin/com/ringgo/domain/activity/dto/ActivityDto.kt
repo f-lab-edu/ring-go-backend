@@ -4,6 +4,7 @@ import com.ringgo.domain.activity.entity.enums.ActivityStatus
 import com.ringgo.domain.activity.entity.enums.ActivityType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import java.time.Instant
 import java.util.*
 
 class ActivityDto {
@@ -50,6 +51,31 @@ class ActivityDto {
                 implementation = ActivityStatus::class
             )
             val status: ActivityStatus
+        )
+    }
+
+    @Schema(description = "활동 조회")
+    class Get {
+        @Schema(description = "활동 조회 응답", name = "ActivityGetResponse")
+        data class Response(
+            @Schema(description = "활동 ID")
+            val id: Long,
+
+            @Schema(description = "활동 유형", example = "EXPENSE")
+            val type: ActivityType,
+
+            @Schema(
+                description = "활동 상태",
+                example = "ACTIVE",
+                implementation = ActivityStatus::class
+            )
+            val status: ActivityStatus,
+
+            @Schema(description = "생성자 여부")
+            val isCreator: Boolean,
+
+            @Schema(description = "생성일시")
+            val createdAt: Instant
         )
     }
 }

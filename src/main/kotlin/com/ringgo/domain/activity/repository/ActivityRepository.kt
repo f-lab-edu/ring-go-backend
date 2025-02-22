@@ -7,4 +7,5 @@ import java.util.*
 
 interface ActivityRepository : JpaRepository<Activity, Long> {
     fun existsByMeetingIdAndType(meetingId: UUID, type: ActivityType): Boolean
+    fun findByMeetingId(meetingId: UUID): List<Activity>
 }
