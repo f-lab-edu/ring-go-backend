@@ -21,7 +21,6 @@ class ActivityService(
     private val meetingRepository: MeetingRepository,
     private val memberRepository: MemberRepository
 ) {
-    @Transactional
     fun create(request: ActivityDto.Create.Request, user: User): ActivityDto.Create.Response {
         // 1. 모임 존재 여부 확인
         val meeting = meetingRepository.findByIdOrNull(request.meetingId)
