@@ -18,6 +18,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -116,6 +117,72 @@ class ExpenseControllerTest {
                     .content(objectMapper.writeValueAsString(request))
             )
                 .andExpect(status().isNotFound)
+                .andDo(print())
+        }
+    }
+
+    @Nested
+    @DisplayName("지출 수정 API")
+    inner class UpdateExpense {
+        private val request = ExpenseDto.Update.Request(
+            name = "갓덴스시",
+            amount = BigDecimal("66000.00"),
+            category = ExpenseCategory.FOOD,
+            description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
+            expenseDate = Instant.parse("2025-02-14T12:00:00Z")
+        )
+
+        @Test
+        fun `지출 수정 성공시 200을 응답한다`() {
+            // given
+            val expectedResponse = ExpenseDto.Update.Response(
+                id = 1L,
+                updatedAt = Instant.parse("2025-02-14T12:00:00Z")
+            )
+            every { expenseService.update(1L, request, any()) } returns expectedResponse
+
+            // when & then
+            mockMvc.perform(
+                patch("/api/v1/expense/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isOk)
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)))
+                .andDo(print())
+
+            verify(exactly = 1) { expenseService.update(1L, request, any()) }
+        }
+
+        @Test
+        fun `존재하지 않는 지출을 수정하면 404를 응답한다`() {
+            // given
+            every { expenseService.update(999L, request, any()) } throws
+                    ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
+
+            // when & then
+            mockMvc.perform(
+                patch("/api/v1/expense/999")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isNotFound)
+                .andDo(print())
+        }
+
+        @Test
+        fun `권한이 없는 경우 403을 응답한다`() {
+            // given
+            every { expenseService.update(1L, request, any()) } throws
+                    ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+
+            // when & then
+            mockMvc.perform(
+                patch("/api/v1/expense/1")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isForbidden)
                 .andDo(print())
         }
     }

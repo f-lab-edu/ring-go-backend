@@ -39,4 +39,23 @@ class ExpenseController(
         log.info { "Create expense request: $request" }
         return expenseService.create(request, user)
     }
+
+    @Operation(summary = "지출 수정", description = "지출 기록을 수정합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "지출 수정 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "403", description = "권한 없음"),
+            ApiResponse(responseCode = "404", description = "지출 기록을 찾을 수 없음")
+        ]
+    )
+    @PatchMapping("/{id}")
+    fun update(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: ExpenseDto.Update.Request,
+        @AuthenticationPrincipal user: User
+    ): ExpenseDto.Update.Response {
+        log.info { "Update expense request: $request" }
+        return expenseService.update(id, request, user)
+    }
 }

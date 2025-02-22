@@ -69,4 +69,33 @@ class ExpenseService(
             createdAt = expense.createdAt
         )
     }
+
+    @Transactional
+    fun update(id: Long, request: ExpenseDto.Update.Request, user: User): ExpenseDto.Update.Response {
+        // 1. 지출 조회
+        val expense = expenseRepository.findByIdOrNull(id)
+            ?: throw ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
+
+        // 2. 요청 데이터 검증
+        request.amount?.let {
+            if (it <= BigDecimal.ZERO) {
+                throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
+            }
+        }
+
+        request.expenseDate?.let {
+            if (it.isAfter(Instant.now())) {
+                throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
+            }
+        }
+
+        // 3. 지출 수정
+        expense.update(request, user.id)
+        log.info { "Expense updated: $id" }
+
+        return ExpenseDto.Update.Response(
+            id = expense.id,
+            updatedAt = expense.updatedAt
+        )
+    }
 }

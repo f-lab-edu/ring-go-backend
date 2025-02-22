@@ -49,4 +49,36 @@ class ExpenseDto {
             val createdAt: Instant
         )
     }
+
+    @Schema(description = "지출 수정")
+    class Update {
+        @Schema(description = "지출 수정 요청", name = "ExpenseUpdateRequest")
+        data class Request(
+            @field:Size(min = 1, max = 20, message = "지출명은 1자 이상 20자 이하여야 합니다")
+            @Schema(description = "지출명")
+            val name: String?,
+
+            @field:Positive(message = "금액은 0보다 커야 합니다")
+            @Schema(description = "금액")
+            val amount: BigDecimal?,
+
+            @Schema(description = "카테고리")
+            val category: ExpenseCategory?,
+
+            @field:Size(max = 200, message = "설명은 200자를 넘을 수 없습니다")
+            @Schema(description = "설명")
+            val description: String?,
+
+            @Schema(description = "지출일자")
+            val expenseDate: Instant?
+        )
+
+        @Schema(description = "지출 수정 응답", name = "ExpenseUpdateResponse")
+        data class Response(
+            @Schema(description = "지출 ID")
+            val id: Long,
+            @Schema(description = "수정일시")
+            val updatedAt: Instant
+        )
+    }
 }
