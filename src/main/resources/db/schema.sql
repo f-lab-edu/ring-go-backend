@@ -65,13 +65,14 @@ CREATE TABLE member
 -- 5. 활동 테이블
 CREATE TABLE activity
 (
-    id         UUID         NOT NULL COMMENT '활동 ID',
+    id         BIGINT       NOT NULL COMMENT '활동 ID',
     meeting_id UUID         NOT NULL COMMENT '모임 ID',
     type       VARCHAR(20)  NOT NULL COMMENT '활동 유형',
     creator_id UUID         NOT NULL COMMENT '생성자 ID',
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
     updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
     PRIMARY KEY (id),
+    CONSTRAINT uk_activity_meeting_type UNIQUE (meeting_id, type),
     CONSTRAINT fk_activity_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
     CONSTRAINT fk_activity_creator FOREIGN KEY (creator_id) REFERENCES user (id)
 ) COMMENT ='활동';
@@ -107,8 +108,8 @@ CREATE TABLE event_participation
 -- 8. 지출 테이블
 CREATE TABLE expense
 (
-    id           UUID            NOT NULL COMMENT '지출 ID',
-    activity_id  UUID            NOT NULL COMMENT '활동 ID',
+    id           BIGINT          NOT NULL COMMENT '지출 ID',
+    activity_id  BIGINT          NOT NULL COMMENT '활동 ID',
     creator_id   UUID            NOT NULL COMMENT '작성자 ID',
     amount       DECIMAL(10, 2)  NOT NULL COMMENT '금액',
     category     VARCHAR(20)     NOT NULL COMMENT '카테고리',
@@ -154,8 +155,8 @@ CREATE TABLE payment
 -- 11. 댓글 테이블
 CREATE TABLE comment
 (
-    id         UUID         NOT NULL COMMENT '댓글 ID',
-    expense_id UUID         NOT NULL COMMENT '지출 ID',
+    id         BIGINT       NOT NULL COMMENT '댓글 ID',
+    expense_id BIGINT       NOT NULL COMMENT '지출 ID',
     writer_id  UUID         NOT NULL COMMENT '작성자 ID',
     content    TEXT         NOT NULL COMMENT '내용',
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
@@ -169,7 +170,7 @@ CREATE TABLE comment
 CREATE TABLE reaction
 (
     id         UUID         NOT NULL COMMENT '반응 ID',
-    expense_id UUID         NOT NULL COMMENT '지출 ID',
+    expense_id BIGINT       NOT NULL COMMENT '지출 ID',
     reactor_id UUID         NOT NULL COMMENT '반응자 ID',
     emoji      VARCHAR(10)  NOT NULL COMMENT '이모지',
     created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',

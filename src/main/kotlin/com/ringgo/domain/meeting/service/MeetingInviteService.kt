@@ -25,7 +25,7 @@ class MeetingInviteService(
     private val memberRepository: MemberRepository,
     private val meetingInviteConfig: MeetingInviteConfig
 ) {
-    fun createInviteLink(id: UUID, user: User): MeetingDto.InviteLink.CreateResponse {
+    fun createInviteLink(id: UUID, user: User): MeetingDto.Invite.Create.Response {
         val meeting = meetingRepository.findByIdOrNull(id)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
@@ -39,7 +39,7 @@ class MeetingInviteService(
             )
         )
 
-        return MeetingDto.InviteLink.CreateResponse(
+        return MeetingDto.Invite.Create.Response(
             inviteUrl = "${meetingInviteConfig.baseUrl}/meeting/invite/${invite.code}",
             expiredAt = DateTimeFormatter.ISO_INSTANT.format(invite.expiredAt)
         )

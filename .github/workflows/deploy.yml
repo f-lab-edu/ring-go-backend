@@ -65,4 +65,5 @@ jobs:
             -e LOGGING_LEVEL_ORG_HIBERNATE_SQL=DEBUG \
             -e SWAGGER_DEV_URL=http://175.45.192.193 \
             -e SWAGGER_DEV_DESCRIPTION="Development Server" \
+            -e APP_MEETING_INVITE_BASE_URL=https://ring-go.dev \
             ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest

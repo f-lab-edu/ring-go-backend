@@ -12,9 +12,8 @@ import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.member.entity.Member
 import com.ringgo.domain.member.entity.enums.MemberRole
+import com.ringgo.domain.member.entity.enums.MemberStatus
 import io.mockk.every
-import io.mockk.just
-import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -203,7 +202,7 @@ class MeetingControllerTest {
             fun `초대 링크 생성 성공시 201을 응답한다`() {
                 // given
                 val testCode = UUID.randomUUID().toString().replace("-", "").take(15)
-                val expectedResponse = MeetingDto.InviteLink.CreateResponse(
+                val expectedResponse = MeetingDto.Invite.Create.Response(
                     inviteUrl = "$baseUrl/meeting/invite/$testCode",
                     expiredAt = "2025-02-09T10:00:00Z"
                 )
@@ -267,7 +266,7 @@ class MeetingControllerTest {
             @Test
             fun `모임 참여 성공시 200을 응답한다`() {
                 // given
-                val expectedResponse = MeetingDto.InviteLink.JoinResponse(
+                val expectedResponse = MeetingDto.Invite.Join.Response(
                     meetingId = UUID.randomUUID(),
                     meetingName = "우리 가좍 소비 모임"
                 )
@@ -358,7 +357,7 @@ class MeetingControllerTest {
                 fun `모임원 목록 조회 성공시 200을 응답한다`() {
                     // given
                     val expectedResponse = listOf(
-                        MeetingDto.Member.Response(
+                        MeetingDto.Member.Get.Response(
                             id = UUID.randomUUID(),
                             userId = testUser.id,
                             name = testUser.name,
@@ -392,7 +391,7 @@ class MeetingControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                     )
                         .andExpect(status().isOk)
-                        .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Response>())))
+                        .andExpect(content().json(objectMapper.writeValueAsString(emptyList<MeetingDto.Member.Get.Response>())))
                         .andDo(print())
 
                     verify(exactly = 1) { meetingService.getMembers(meetingId, any()) }
@@ -440,7 +439,11 @@ class MeetingControllerTest {
                 @Test
                 fun `모임원 내보내기 성공시 204를 응답한다`() {
                     // given
-                    every { meetingService.kickMember(meetingId, memberId, any()) } just runs
+                    val expectedResponse = MeetingDto.Member.Kick.Response(
+                        id = memberId,
+                        status = MemberStatus.KICKED
+                    )
+                    every { meetingService.kickMember(meetingId, memberId, any()) } returns expectedResponse
 
                     // when & then
                     mockMvc.perform(

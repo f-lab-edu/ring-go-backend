@@ -78,7 +78,7 @@ class MeetingController(
     fun createInviteLink(
         @PathVariable id: UUID,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.InviteLink.CreateResponse = meetingInviteService.createInviteLink(id, user)
+    ): MeetingDto.Invite.Create.Response = meetingInviteService.createInviteLink(id, user)
 
     @Operation(summary = "초대 코드로 모임 참여", description = "초대 코드를 사용하여 모임에 참여합니다.")
     @ApiResponses(
@@ -93,9 +93,9 @@ class MeetingController(
     fun joinMeeting(
         @PathVariable code: String,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.InviteLink.JoinResponse {
+    ): MeetingDto.Invite.Join.Response {
         val member = meetingInviteService.joinWithInviteCode(code, user)
-        return MeetingDto.InviteLink.JoinResponse(
+        return MeetingDto.Invite.Join.Response(
             meetingId = member.meeting.id,
             meetingName = member.meeting.name
         )
@@ -113,7 +113,7 @@ class MeetingController(
     fun getMembers(
         @PathVariable id: UUID,
         @AuthenticationPrincipal user: User
-    ): List<MeetingDto.Member.Response> {
+    ): List<MeetingDto.Member.Get.Response> {
         return meetingService.getMembers(id, user)
     }
 
@@ -137,4 +137,5 @@ class MeetingController(
     ) {
         meetingService.kickMember(meetingId, memberId, user)
     }
+
 }
