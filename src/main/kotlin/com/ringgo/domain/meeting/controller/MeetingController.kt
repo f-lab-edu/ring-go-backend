@@ -127,13 +127,14 @@ class MeetingController(
             ApiResponse(responseCode = "404", description = "모임 또는 모임원을 찾을 수 없음")
         ]
     )
-    @PatchMapping("/{meetingId}/members/{memberId}")
-    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/{meetingId}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun kickMember(
         @PathVariable meetingId: UUID,
         @PathVariable memberId: UUID,
         @AuthenticationPrincipal user: User
-    ): MeetingDto.Member.Kick.Response {
-        return meetingService.kickMember(meetingId, memberId, user)
+    ) {
+        meetingService.kickMember(meetingId, memberId, user)
     }
+
 }
