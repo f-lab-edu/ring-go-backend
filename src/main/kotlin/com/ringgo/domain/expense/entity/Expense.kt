@@ -6,7 +6,6 @@ import com.ringgo.domain.activity.entity.ExpenseActivity
 import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
@@ -62,10 +61,6 @@ class Expense(
 
     @Column
     var deletedAt: Instant? = null
-
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
 
     fun update(request: ExpenseDto.Update.Request, requesterId: UUID) {
         if (creator.id != requesterId) {

@@ -61,7 +61,11 @@ class MeetingService(
     }
 
     @Transactional
-    fun updateStatus(meetingId: UUID, request: MeetingDto.UpdateStatus.Request, user: User): MeetingDto.UpdateStatus.Response {
+    fun updateStatus(
+        meetingId: UUID,
+        request: MeetingDto.UpdateStatus.Request,
+        user: User
+    ): MeetingDto.UpdateStatus.Response {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
             ?: throw ApplicationException(ErrorCode.MEETING_NOT_FOUND)
 
@@ -104,7 +108,7 @@ class MeetingService(
 
     @Transactional
     fun kickMember(meetingId: UUID, memberId: UUID, user: User): MeetingDto.Member.Kick.Response {
-        // 1. 요청자의 멤버십 확인 및 권한 검증
+        // 1. 요청자가 모임원인지 확인 및 권한 검증
         val requesterMember = memberRepository.findByMeetingIdAndUserId(meetingId, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 

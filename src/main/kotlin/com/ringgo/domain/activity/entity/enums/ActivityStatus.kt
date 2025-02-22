@@ -4,12 +4,10 @@ import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 
+private val log = KotlinLogging.logger {}
+
 enum class ActivityStatus {
     ACTIVE, ENDED, DELETED;
-
-    companion object {
-        private val log = KotlinLogging.logger {}
-    }
 
     fun validateTransitionTo(newStatus: ActivityStatus) {
         val isValid = when (this) {
