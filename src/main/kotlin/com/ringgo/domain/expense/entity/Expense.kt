@@ -3,7 +3,6 @@ package com.ringgo.domain.expense.entity
 import com.ringgo.domain.activity.entity.ExpenseActivity
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
@@ -29,15 +28,18 @@ class Expense(
     @JoinColumn(name = "creator_id", nullable = false)
     val creator: User,
 
-    @Column(nullable = false, length = 100)
-    var name: String,
+    @Column(nullable = false)
+    val isNoExpense: Boolean = false,
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    var amount: BigDecimal,
+    @Column(nullable = true, length = 100)
+    var name: String? = null,
+
+    @Column(nullable = true, precision = 10, scale = 2)
+    var amount: BigDecimal? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    var category: ExpenseCategory,
+    var category: ExpenseCategory? = null,
 
     @Column(columnDefinition = "TEXT")
     var description: String?,

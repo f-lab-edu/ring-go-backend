@@ -42,4 +42,7 @@ enum class ErrorCode(
     INVALID_EXPENSE_AMOUNT(HttpStatus.BAD_REQUEST, "E002", "올바르지 않은 지출 금액입니다"),
     INVALID_EXPENSE_CATEGORY(HttpStatus.BAD_REQUEST, "E003", "올바르지 않은 지출 카테고리입니다"),
     NOT_EXPENSE_CREATOR(HttpStatus.FORBIDDEN, "E004", "지출 기록 작성자만 가능합니다"),
+    EXPENSE_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "E005", "지출명은 필수입니다"),
+    EXPENSE_CATEGORY_REQUIRED(HttpStatus.BAD_REQUEST, "E006", "지출 카테고리는 필수입니다"),
+    INVALID_NO_EXPENSE_DATA(HttpStatus.BAD_REQUEST, "E007", "무지출 체크 시 지출 데이터를 입력할 수 없습니다")
 }

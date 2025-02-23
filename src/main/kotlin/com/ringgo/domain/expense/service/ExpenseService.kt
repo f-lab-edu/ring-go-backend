@@ -40,14 +40,16 @@ class ExpenseService(
             throw ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
         }
 
-        // 4. 금액 검증
-        if (request.amount <= BigDecimal.ZERO) {
-            throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
-        }
-
-        // 5. 날짜 검증
+        // 4. 날짜 검증
         if (request.expenseDate.isAfter(Instant.now())) {
             throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
+        }
+
+        // 5. 데이터 검증
+        if (request.isNoExpense) {
+            validateNoExpenseData(request)
+        } else {
+            validateExpenseData(request)
         }
 
         // 6. 지출 생성 및 저장
@@ -55,9 +57,10 @@ class ExpenseService(
             Expense(
                 activity = activity,
                 creator = user,
-                name = request.name,
-                amount = request.amount,
-                category = request.category,
+                isNoExpense = request.isNoExpense,
+                name = if (!request.isNoExpense) request.name else null,
+                amount = if (!request.isNoExpense) request.amount else null,
+                category = if (!request.isNoExpense) request.category else null,
                 description = request.description,
                 expenseDate = request.expenseDate
             )
@@ -68,5 +71,23 @@ class ExpenseService(
             id = expense.id,
             createdAt = expense.createdAt
         )
+    }
+
+    private fun validateExpenseData(request: ExpenseDto.Create.Request) {
+        if (request.name.isNullOrBlank()) {
+            throw ApplicationException(ErrorCode.EXPENSE_NAME_REQUIRED)
+        }
+        if (request.amount == null || request.amount <= BigDecimal.ZERO) {
+            throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
+        }
+        if (request.category == null) {
+            throw ApplicationException(ErrorCode.EXPENSE_CATEGORY_REQUIRED)
+        }
+    }
+
+    private fun validateNoExpenseData(request: ExpenseDto.Create.Request) {
+        if (request.name != null || request.amount != null || request.category != null) {
+            throw ApplicationException(ErrorCode.INVALID_NO_EXPENSE_DATA)
+        }
     }
 }

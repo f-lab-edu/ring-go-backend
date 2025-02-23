@@ -64,7 +64,8 @@ class ExpenseControllerTest {
             amount = BigDecimal("10000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = Instant.parse("2025-02-14T12:00:00Z")
+            expenseDate = Instant.parse("2025-02-14T12:00:00Z"),
+            isNoExpense = false,
         )
 
         @Test
@@ -92,7 +93,11 @@ class ExpenseControllerTest {
         @Test
         fun `유효하지 않은 요청시 400을 응답한다`() {
             // given
-            val invalidRequest = request.copy(name = "")
+            val invalidRequest = request.copy(
+                isNoExpense = false,
+                name = null,
+            )
+            every { expenseService.create(invalidRequest, any()) } throws ApplicationException(ErrorCode.EXPENSE_NAME_REQUIRED)
 
             // when & then
             mockMvc.perform(
