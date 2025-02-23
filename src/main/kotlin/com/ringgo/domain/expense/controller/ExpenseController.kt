@@ -130,8 +130,6 @@ class ExpenseController(
             page = page,
             size = size
         )
-        request.validate()
-
         return expenseService.search(request, user)
     }
 }

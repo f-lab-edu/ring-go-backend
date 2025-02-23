@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @WebMvcTest(ExpenseController::class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -66,7 +68,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("10000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = Instant.parse("2025-02-14")
+            expenseDate = LocalDate.of(2025, 2, 14)
         )
 
         @Test
@@ -130,7 +132,7 @@ class ExpenseControllerTest {
             amount = BigDecimal("66000.00"),
             category = ExpenseCategory.FOOD,
             description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음.. 그래서 점심에 초밥 사먹었어요. ㅋㅋ",
-            expenseDate = Instant.parse("2025-02-14")
+            expenseDate = LocalDate.of(2025, 2, 14)
         )
 
         @Test
@@ -260,7 +262,7 @@ class ExpenseControllerTest {
 
         private val now = Instant.parse("2025-02-14T00:00:00Z")
         private val expenseItems = listOf(
-            ExpenseDto.Get.ExpenseItem(
+            ExpenseDto.ExpenseItem(
                 id = 1L,
                 name = "갓덴스시",
                 amount = BigDecimal("15000.00"),
@@ -268,7 +270,7 @@ class ExpenseControllerTest {
                 description = "어제 야근하느라 힘들어서 진짜 나한테 보상을 주고 싶었음..",
                 createdAt = Instant.parse("2025-01-13T12:00:00Z")
             ),
-            ExpenseDto.Get.ExpenseItem(
+            ExpenseDto.ExpenseItem(
                 id = 2L,
                 name = "택시비",
                 amount = BigDecimal("15000.00"),
@@ -278,7 +280,7 @@ class ExpenseControllerTest {
             )
         )
 
-        private val userExpense = ExpenseDto.Get.UserExpense(
+        private val userExpense = ExpenseDto.UserExpenseCommon(
             userId = testUser.id,
             userName = testUser.name,
             expenses = expenseItems,
@@ -290,7 +292,7 @@ class ExpenseControllerTest {
             // given
             val expectedResponse = ExpenseDto.Get.Response(
                 dailyExpenses = listOf(
-                    ExpenseDto.Get.DailyExpense(
+                    ExpenseDto.DailyExpense(
                         date = now,
                         userExpenses = listOf(userExpense)
                     )
@@ -359,7 +361,7 @@ class ExpenseControllerTest {
     inner class SearchExpense {
         private val activityId = 1L
         private val baseExpenseItems = listOf(
-            ExpenseDto.Search.ExpenseItem(
+            ExpenseDto.ExpenseItem(
                 id = 1L,
                 name = "점심 식사",
                 amount = BigDecimal("15000.00"),
@@ -367,7 +369,7 @@ class ExpenseControllerTest {
                 description = "팀원들과 점심 식사",
                 createdAt = Instant.parse("2024-02-14T12:00:00Z")
             ),
-            ExpenseDto.Search.ExpenseItem(
+            ExpenseDto.ExpenseItem(
                 id = 2L,
                 name = "저녁 회식",
                 amount = BigDecimal("25000.00"),
@@ -377,7 +379,7 @@ class ExpenseControllerTest {
             )
         )
 
-        private val baseUserExpense = ExpenseDto.Search.UserExpense(
+        private val baseUserExpense = ExpenseDto.UserExpenseCommon(
             userId = testUser.id,
             userName = testUser.name,
             expenses = baseExpenseItems,
@@ -388,8 +390,8 @@ class ExpenseControllerTest {
 
         private val baseResponse = ExpenseDto.Search.Response(
             dailyExpenses = listOf(
-                ExpenseDto.Search.DailyExpense(
-                    date = baseExpenseDate,
+                ExpenseDto.DailyExpense(
+                    date = baseExpenseDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
                     userExpenses = listOf(baseUserExpense)
                 )
             ),
@@ -508,6 +510,19 @@ class ExpenseControllerTest {
 
         @Test
         fun `시작일이 종료일보다 늦으면 400을 응답한다`() {
+            // given
+            val request = ExpenseDto.Search.Request(
+                activityId = activityId,
+                keyword = null,
+                startDate = LocalDate.of(2024, 2, 28),
+                endDate = LocalDate.of(2024, 2, 1),
+                sortOrder = false,
+                page = 0,
+                size = 20
+            )
+            every { expenseService.search(request, any()) } throws
+                    ApplicationException(ErrorCode.INVALID_DATE_RANGE)
+
             // when & then
             mockMvc.perform(
                 get("/api/v1/expense/search")
@@ -517,12 +532,25 @@ class ExpenseControllerTest {
             )
                 .andExpect(status().isBadRequest)
                 .andDo(print())
+
+            verify(exactly = 1) { expenseService.search(request, any()) }
         }
 
         @Test
         fun `미래 날짜로 검색하면 400을 응답한다`() {
             // given
             val futureDate = LocalDate.now().plusDays(1)
+            val request = ExpenseDto.Search.Request(
+                activityId = activityId,
+                keyword = null,
+                startDate = futureDate,
+                endDate = futureDate,
+                sortOrder = false,
+                page = 0,
+                size = 20
+            )
+            every { expenseService.search(request, any()) } throws
+                    ApplicationException(ErrorCode.INVALID_FUTURE_DATE)
 
             // when & then
             mockMvc.perform(
@@ -533,6 +561,8 @@ class ExpenseControllerTest {
             )
                 .andExpect(status().isBadRequest)
                 .andDo(print())
+
+            verify(exactly = 1) { expenseService.search(request, any()) }
         }
     }
 }

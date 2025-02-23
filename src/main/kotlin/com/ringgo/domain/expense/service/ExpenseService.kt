@@ -17,7 +17,8 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 private val log = KotlinLogging.logger {}
 
@@ -47,10 +48,9 @@ class ExpenseService(
             throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
         }
 
-        // 5. 날짜 검증
-        if (request.expenseDate.isAfter(Instant.now())) {
-            throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
-        }
+        // 5. 날짜 변환 및 미래 날짜 검증
+        val expenseInstant = request.expenseDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+        validateFutureDate(request.expenseDate)
 
         // 6. 지출 생성 및 저장
         val expense = expenseRepository.save(
@@ -61,7 +61,7 @@ class ExpenseService(
                 amount = request.amount,
                 category = request.category,
                 description = request.description,
-                expenseDate = request.expenseDate
+                expenseDate = expenseInstant
             )
         )
 
@@ -78,23 +78,34 @@ class ExpenseService(
         val expense = expenseRepository.findByIdOrNull(id)
             ?: throw ApplicationException(ErrorCode.EXPENSE_NOT_FOUND)
 
-        // 2. 요청 데이터 검증
+        // 2. 작성자 검증
+        if (expense.creator.id != user.id) {
+            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
+        }
+
+        // 3. 금액 검증
         request.amount?.let {
             if (it <= BigDecimal.ZERO) {
                 throw ApplicationException(ErrorCode.INVALID_EXPENSE_AMOUNT)
             }
         }
 
-        request.expenseDate?.let {
-            if (it.isAfter(Instant.now())) {
-                throw ApplicationException(ErrorCode.INVALID_INPUT_VALUE)
-            }
+        // 4. 날짜 변환 및 검증
+        val expenseInstant = request.expenseDate?.let {
+            validateFutureDate(it)
+            it.atStartOfDay(ZoneOffset.UTC).toInstant()
         }
 
-        // 3. 지출 수정
-        expense.update(request, user.id)
-        log.info { "Expense updated: $id" }
+        // 5. 업데이트
+        expense.update(
+            request.name,
+            request.amount,
+            request.category,
+            request.description,
+            expenseInstant
+        )
 
+        log.info { "Expense updated: $id" }
         return ExpenseDto.Update.Response(
             id = expense.id,
             updatedAt = expense.updatedAt
@@ -121,8 +132,8 @@ class ExpenseService(
             throw ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
         }
 
-        // 5. 지출 삭제 처리
-        expense.delete(user.id)
+        // 5. 삭제 처리
+        expense.markAsDeleted()
         log.info { "Expense deleted: $id" }
     }
 
@@ -135,28 +146,28 @@ class ExpenseService(
         memberRepository.findByMeetingIdAndUserId(activity.meeting.id, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
-        // 3. 지출 목록 조회 및 변환
+        // 3. 지출 목록 조회
         val expenses = expenseRepository.findAllByActivityIdWithCreator(request.activityId)
             .groupBy { it.expenseDate }
             .map { (date, expensesForDate) ->
-                ExpenseDto.Get.DailyExpense(
+                ExpenseDto.DailyExpense(
                     date = date,
                     userExpenses = expensesForDate
                         .groupBy { it.creator }
                         .map { (user, userExpenses) ->
-                            ExpenseDto.Get.UserExpense(
+                            ExpenseDto.UserExpenseCommon(
                                 userId = user.id,
                                 userName = user.name,
                                 expenses = userExpenses
                                     .sortedBy { it.createdAt }
                                     .map { expense ->
-                                        ExpenseDto.Get.ExpenseItem(
+                                        ExpenseDto.ExpenseItem(
                                             id = expense.id,
                                             name = expense.name,
                                             amount = expense.amount,
                                             category = expense.category,
                                             description = expense.description,
-                                            createdAt = expense.createdAt,
+                                            createdAt = expense.createdAt
                                         )
                                     },
                                 totalAmount = userExpenses.sumOf { it.amount }
@@ -176,7 +187,6 @@ class ExpenseService(
         return ExpenseDto.Get.Response(dailyExpenses = expenses)
     }
 
-    @Transactional(readOnly = true)
     fun search(request: ExpenseDto.Search.Request, user: User): ExpenseDto.Search.Response {
         // 1. 활동 검증
         val activity = activityRepository.findByIdOrNull(request.activityId)?.let { it as? ExpenseActivity }
@@ -186,44 +196,51 @@ class ExpenseService(
         memberRepository.findByMeetingIdAndUserId(activity.meeting.id, user.id)
             ?: throw ApplicationException(ErrorCode.NOT_MEETING_MEMBER)
 
-        // 3. 페이징 및 정렬 설정
+        // 3. 날짜 범위 검증
+        validateDateRange(request.startDate, request.endDate)
+
+        // 4. 날짜 변환
+        val startInstant = request.startDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
+        val endInstant = request.endDate?.plusDays(1)?.atStartOfDay(ZoneOffset.UTC)?.minusNanos(1)?.toInstant()
+
+        // 5. 페이징 및 정렬 설정
         val pageable = if (request.sortOrder) {
             PageRequest.of(request.page, request.size, Sort.by(Sort.Direction.ASC, "expenseDate", "createdAt"))
         } else {
             PageRequest.of(request.page, request.size, Sort.by(Sort.Direction.DESC, "expenseDate", "createdAt"))
         }
 
-        // 4. 검색 실행
+        // 6. 검색 실행
         val searchResult = expenseRepository.searchExpenses(
             activityId = request.activityId,
             keyword = request.keyword,
-            startDate = request.startDate,
-            endDate = request.endDate,
+            startDate = startInstant,
+            endDate = endInstant,
             pageable = pageable
         )
 
-        // 5. 총 금액 계산
+        // 7. 총 금액 계산
         val totalAmount = expenseRepository.calculateTotalAmount(
             activityId = request.activityId,
             keyword = request.keyword,
-            startDate = request.startDate,
-            endDate = request.endDate,
+            startDate = startInstant,
+            endDate = endInstant
         ) ?: BigDecimal.ZERO
 
-        // 6. 응답 데이터 구성
+        // 8. 응답 데이터 구성
         val dailyExpenses = searchResult.content
             .groupBy { it.expenseDate }
             .map { (date, expensesForDate) ->
-                ExpenseDto.Search.DailyExpense(
+                ExpenseDto.DailyExpense(
                     date = date,
                     userExpenses = expensesForDate
                         .groupBy { it.creator }
                         .map { (user, userExpenses) ->
-                            ExpenseDto.Search.UserExpense(
+                            ExpenseDto.UserExpenseCommon(
                                 userId = user.id,
                                 userName = user.name,
                                 expenses = userExpenses.map { expense ->
-                                    ExpenseDto.Search.ExpenseItem(
+                                    ExpenseDto.ExpenseItem(
                                         id = expense.id,
                                         name = expense.name,
                                         amount = expense.amount,
@@ -256,5 +273,22 @@ class ExpenseService(
                 totalAmount = totalAmount
             )
         )
+    }
+
+    private fun validateFutureDate(date: LocalDate) {
+        if (date.isAfter(LocalDate.now())) {
+            throw ApplicationException(ErrorCode.INVALID_FUTURE_DATE)
+        }
+    }
+
+    private fun validateDateRange(startDate: LocalDate?, endDate: LocalDate?) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw ApplicationException(ErrorCode.INVALID_DATE_RANGE)
+        }
+
+        val now = LocalDate.now()
+        if (startDate?.isAfter(now) == true || endDate?.isAfter(now) == true) {
+            throw ApplicationException(ErrorCode.INVALID_FUTURE_DATE)
+        }
     }
 }

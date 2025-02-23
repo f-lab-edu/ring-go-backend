@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
-import java.time.LocalDate
+import java.time.Instant
 
 @Repository
 interface ExpenseRepository : JpaRepository<Expense, Long> {
@@ -42,8 +42,8 @@ interface ExpenseRepository : JpaRepository<Expense, Long> {
     fun searchExpenses(
         @Param("activityId") activityId: Long,
         @Param("keyword") keyword: String?,
-        @Param("startDate") startDate: LocalDate?,
-        @Param("endDate") endDate: LocalDate?,
+        @Param("startDate") startDate: Instant?,
+        @Param("endDate") endDate: Instant?,
         pageable: Pageable
     ): Page<Expense>
 
@@ -65,7 +65,7 @@ interface ExpenseRepository : JpaRepository<Expense, Long> {
     fun calculateTotalAmount(
         @Param("activityId") activityId: Long,
         @Param("keyword") keyword: String?,
-        @Param("startDate") startDate: LocalDate?,
-        @Param("endDate") endDate: LocalDate?
+        @Param("startDate") startDate: Instant?,
+        @Param("endDate") endDate: Instant?
     ): BigDecimal?
 }
