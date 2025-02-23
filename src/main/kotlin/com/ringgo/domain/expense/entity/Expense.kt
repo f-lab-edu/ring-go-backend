@@ -1,10 +1,6 @@
 package com.ringgo.domain.expense.entity
 
-import com.ringgo.common.exception.ApplicationException
-import com.ringgo.common.exception.ErrorCode
 import com.ringgo.domain.activity.entity.ExpenseActivity
-import com.ringgo.domain.activity.entity.enums.ActivityStatus
-import com.ringgo.domain.expense.dto.ExpenseDto
 import com.ringgo.domain.expense.entity.enums.ExpenseCategory
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
@@ -14,7 +10,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.math.BigDecimal
 import java.time.Instant
-import java.util.*
 
 @Entity
 @Table(name = "expense")
@@ -63,27 +58,16 @@ class Expense(
     @Column
     var deletedAt: Instant? = null
 
-    fun update(request: ExpenseDto.Update.Request, requesterId: UUID) {
-        if (creator.id != requesterId) {
-            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
-        }
-
-        request.name?.let { name = it }
-        request.amount?.let { amount = it }
-        request.category?.let { category = it }
-        request.description?.let { description = it }
-        request.expenseDate?.let { expenseDate = it }
+    fun update(name: String?, amount: BigDecimal?, category: ExpenseCategory?,
+               description: String?, expenseDate: Instant?) {
+        name?.let { this.name = it }
+        amount?.let { this.amount = it }
+        category?.let { this.category = it }
+        description?.let { this.description = it }
+        expenseDate?.let { this.expenseDate = it }
     }
 
-    fun delete(requesterId: UUID) {
-        if (creator.id != requesterId) {
-            throw ApplicationException(ErrorCode.NOT_EXPENSE_CREATOR)
-        }
-
-        if (activity.status != ActivityStatus.ACTIVE) {
-            throw ApplicationException(ErrorCode.INACTIVE_ACTIVITY)
-        }
-
+    fun markAsDeleted() {
         isDeleted = true
         deletedAt = Instant.now()
     }

@@ -8,4 +8,9 @@ data class ErrorResponse(
         code = errorCode.code,
         message = errorCode.message
     )
+
+    constructor(errorCode: ErrorCode, details: String) : this(
+        code = errorCode.code,
+        message = "${errorCode.message}: $details"
+    )
 }
