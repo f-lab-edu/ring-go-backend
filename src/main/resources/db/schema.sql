@@ -109,15 +109,19 @@ CREATE TABLE event_participation
 -- 8. 지출 테이블
 CREATE TABLE expense
 (
-    id           BIGINT          NOT NULL AUTO_INCREMENT COMMENT '지출 ID',
-    activity_id  BIGINT          NOT NULL COMMENT '활동 ID',
-    creator_id   UUID            NOT NULL COMMENT '작성자 ID',
-    amount       DECIMAL(10, 2)  NOT NULL COMMENT '금액',
-    category     VARCHAR(20)     NOT NULL COMMENT '카테고리',
-    description  TEXT            COMMENT '설명',
-    expense_date DATE            NOT NULL COMMENT '지출일자',
-    created_at   TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
-    updated_at   TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '수정일시',
+    id            BIGINT          NOT NULL AUTO_INCREMENT COMMENT '지출 ID',
+    activity_id   BIGINT          NOT NULL COMMENT '활동 ID',
+    creator_id    UUID            NOT NULL COMMENT '작성자 ID',
+    is_no_expense BOOLEAN         NOT NULL DEFAULT FALSE COMMENT '무지출 여부',
+    name          VARCHAR(100)    NULL COMMENT '지출명',
+    amount        DECIMAL(10, 2)  NULL COMMENT '금액',
+    category      VARCHAR(20)     NULL COMMENT '카테고리',
+    description   TEXT            NULL COMMENT '설명',
+    expense_date  TIMESTAMP(6)    NOT NULL COMMENT '지출일자',
+    is_deleted    BOOLEAN         NOT NULL DEFAULT FALSE COMMENT '삭제 여부',
+    deleted_at    TIMESTAMP(6)    NULL COMMENT '삭제일시',
+    created_at    TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '생성일시',
+    updated_at    TIMESTAMP(6)    NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '수정일시',
     PRIMARY KEY (id),
     CONSTRAINT fk_expense_activity FOREIGN KEY (activity_id) REFERENCES activity (id),
     CONSTRAINT fk_expense_creator FOREIGN KEY (creator_id) REFERENCES user (id)

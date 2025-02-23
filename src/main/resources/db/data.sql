@@ -58,7 +58,7 @@ VALUES ((SELECT id FROM meeting WHERE name = '떡잎 유치원 해바라기반')
         'EXPENSE', (SELECT id FROM user WHERE email = 'chulsoo@test.com'));
 
 -- 6. 지출 기록: 짱구네 관련
-INSERT INTO expense (activity_id, creator_id, amount, category, description, expense_date)
+INSERT INTO expense (activity_id, creator_id, name, amount, category, description, expense_date, is_no_expense)
 VALUES (
            (SELECT id
             FROM activity
@@ -66,7 +66,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
            (SELECT id FROM user WHERE email = 'chulsoo@test.com'),
-           25000, 'FOOD', '라면', '2025-01-13'),
+           '편의점 라면',
+           25000, 'FOOD', '밤늦게 배고파서 편의점에서 라면 먹음', '2025-01-13', false),
        (
            (SELECT id
             FROM activity
@@ -74,7 +75,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
            (SELECT id FROM user WHERE email = 'hoon@test.com'),
-           12000, 'DATE', '영화 티켓', '2025-01-14'),
+           '액션가면 영화',
+           12000, 'DATE', '액션가면2 개봉해서 보러감', '2025-01-14', false),
        (
            (SELECT id
             FROM activity
@@ -82,7 +84,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
            (SELECT id FROM user WHERE email = 'suji@test.com'),
-           18000, 'TRANSPORT', '지하철', '2025-01-15'),
+           '지하철비',
+           18000, 'TRANSPORT', '학원 다니면서 쓴 교통비', '2025-01-15', false),
        (
            (SELECT id
             FROM activity
@@ -90,7 +93,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
            (SELECT id FROM user WHERE email = 'maenggu@test.com'),
-           30000, 'FOOD', '초밥', '2025-01-16'),
+           '초밥 디너',
+           30000, 'FOOD', '친구들이랑 초밥집에서 저녁 먹음', '2025-01-16', false),
        (
            (SELECT id
             FROM activity
@@ -98,10 +102,32 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'chulsoo@test.com')),
            (SELECT id FROM user WHERE email = 'yuri@test.com'),
-           7000, 'FOOD', '아이스크림', '2025-01-17');
+           '아이스크림',
+           7000, 'FOOD', '날씨가 더워서 아이스크림 사먹음', '2025-01-17', false);
+
+-- 무지출 기록 추가
+INSERT INTO expense (activity_id, creator_id, expense_date, is_no_expense)
+VALUES (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'),
+           (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
+           '2025-01-18',
+           true
+       ),
+       (
+           (SELECT id
+            FROM activity
+            WHERE meeting_id = (SELECT id FROM meeting WHERE name = '짱구네')
+              AND type = 'EXPENSE'),
+           (SELECT id FROM user WHERE email = 'misun@test.com'),
+           '2025-01-19',
+           true
+       );
 
 -- 7. 지출 기록: 떡잎 유치원 해바라기반 관련
-INSERT INTO expense (activity_id, creator_id, amount, category, description, expense_date)
+INSERT INTO expense (activity_id, creator_id, name, amount, category, description, expense_date, is_no_expense)
 VALUES (
            (SELECT id
             FROM activity
@@ -109,7 +135,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
            (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
-           15000, 'FOOD', '떡볶이', '2025-01-11'),
+           '떡볶이 파티',
+           15000, 'FOOD', '친구들이랑 같이 떡볶이 먹음', '2025-01-11', false),
        (
            (SELECT id
             FROM activity
@@ -117,7 +144,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
            (SELECT id FROM user WHERE email = 'yuri@test.com'),
-           8000, 'TRANSPORT', '택시', '2025-01-12'),
+           '택시비',
+           8000, 'TRANSPORT', '비와서 택시타고 귀가', '2025-01-12', false),
        (
            (SELECT id
             FROM activity
@@ -125,7 +153,8 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
            (SELECT id FROM user WHERE email = 'hoon@test.com'),
-           50000, 'SHOPPING', '액션가면', '2025-01-13'),
+           '액션가면 피규어',
+           50000, 'SHOPPING', '한정판 액션가면 피규어 구매', '2025-01-13', false),
        (
            (SELECT id
             FROM activity
@@ -133,37 +162,38 @@ VALUES (
               AND type = 'EXPENSE'
               AND creator_id = (SELECT id FROM user WHERE email = 'shinnosuke@test.com')),
            (SELECT id FROM user WHERE email = 'shinnosuke@test.com'),
-           20000, 'DATE', '놀이공원 티켓', '2025-01-14');
+           '놀이공원',
+           20000, 'DATE', '친구들이랑 놀이공원 방문', '2025-01-14', false);
 
--- 8. 반응 추가: 짱구네 관련 지출에 대한 반응
+-- 8. 반응 추가: 떡잎 유치원 해바라기반 관련 지출에 대한 반응
 INSERT INTO reaction (id, expense_id, reactor_id, emoji)
 VALUES (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '떡볶이' AND amount = 15000),
+        (SELECT id FROM expense WHERE name = '떡볶이 파티' AND amount = 15000),
         (SELECT id FROM user WHERE email = 'chulsoo@test.com'), '👍'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '택시' AND amount = 8000),
+        (SELECT id FROM expense WHERE name = '택시비' AND amount = 8000),
         (SELECT id FROM user WHERE email = 'hoon@test.com'), '❤️'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '액션가면' AND amount = 50000),
+        (SELECT id FROM expense WHERE name = '액션가면 피규어' AND amount = 50000),
         (SELECT id FROM user WHERE email = 'yuri@test.com'), '😆'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '놀이공원 티켓' AND amount = 20000),
+        (SELECT id FROM expense WHERE name = '놀이공원' AND amount = 20000),
         (SELECT id FROM user WHERE email = 'chulsoo@test.com'), '😮');
 
--- 9. 반응 추가: 떡잎 유치원 해바라기반 관련 지출에 대한 반응
+-- 9. 반응 추가: 짱구네 관련 지출에 대한 반응
 INSERT INTO reaction (id, expense_id, reactor_id, emoji)
 VALUES (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '라면' AND amount = 25000),
+        (SELECT id FROM expense WHERE name = '편의점 라면' AND amount = 25000),
         (SELECT id FROM user WHERE email = 'hoon@test.com'), '👍'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '영화 티켓' AND amount = 12000),
+        (SELECT id FROM expense WHERE name = '액션가면 영화' AND amount = 12000),
         (SELECT id FROM user WHERE email = 'maenggu@test.com'), '❤️'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '지하철' AND amount = 18000),
+        (SELECT id FROM expense WHERE name = '지하철비' AND amount = 18000),
         (SELECT id FROM user WHERE email = 'suji@test.com'), '😢'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '초밥' AND amount = 30000),
+        (SELECT id FROM expense WHERE name = '초밥 디너' AND amount = 30000),
         (SELECT id FROM user WHERE email = 'yuri@test.com'), '😆'),
        (RANDOM_UUID(),
-        (SELECT id FROM expense WHERE description = '아이스크림' AND amount = 7000),
+        (SELECT id FROM expense WHERE name = '아이스크림' AND amount = 7000),
         (SELECT id FROM user WHERE email = 'chulsoo@test.com'), '😡');
