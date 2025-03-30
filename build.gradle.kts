@@ -35,10 +35,14 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5")
 
     // QueryDSL
-    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
-    kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    implementation("io.github.openfeign.querydsl:querydsl-jpa:5.6.1:jakarta")
+    kapt("io.github.openfeign.querydsl:querydsl-apt:5.6.1:jakarta")
     kapt("jakarta.annotation:jakarta.annotation-api")
     kapt("jakarta.persistence:jakarta.persistence-api")
+
+    // Spring Reactive WebClient
+    implementation("org.springframework:spring-webflux")
+    implementation("io.projectreactor.netty:reactor-netty")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
