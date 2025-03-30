@@ -6,7 +6,32 @@ spring:
     hibernate:
       ddl-auto: validate
 
+# OAuth2 개발 환경 설정
+oauth2:
+  callback-base-url: https://ring-go.dev
+  kakao:
+    client-id: 0350548cf26eaa50d6b9d5d5a6b3b10c
+    client-secret: QSoPWoed9aUPCRwAVYi0vjPknArpBlgv
+  naver:
+    client-id: ZcYVeKwZi_9RGrLRiNNu
+    client-secret: DA6oaXnMmN
+  google:
+    client-id: 80994025209-cobfiqpf9ocac16fq0c4tmm10rnk5r4v.apps.googleusercontent.com
+    client-secret: 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
+  apple:
+    client-id: ${APPLE_CLIENT_ID:}
+    client-secret: ${APPLE_CLIENT_SECRET:}
+
+# JWT 비밀키 설정
+jwt:
+  secret: your-256-bit-secret-key-should-be-very-long-and-secure
+
 app:
   meeting:
     invite:
       base-url: "https://ring-go.dev"
+
+# Swagger 설정
+swagger:
+  url: https://ring-go.dev
+  description: Development Server

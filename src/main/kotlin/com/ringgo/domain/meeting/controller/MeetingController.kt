@@ -1,18 +1,17 @@
 package com.ringgo.domain.meeting.controller
 
+import com.ringgo.common.config.security.AuthUser
 import com.ringgo.domain.meeting.dto.MeetingDto
 import com.ringgo.domain.meeting.service.MeetingInviteService
 import com.ringgo.domain.meeting.service.MeetingService
 import com.ringgo.domain.user.entity.User
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
@@ -34,7 +33,7 @@ class MeetingController(
     @ResponseStatus(HttpStatus.CREATED)
     fun create(
         @Valid @RequestBody request: MeetingDto.Create.Request,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ): MeetingDto.Create.Response {
         return meetingService.create(request, user)
     }
@@ -46,7 +45,7 @@ class MeetingController(
         ]
     )
     @GetMapping
-    fun getMyMeeting(@AuthenticationPrincipal user: User) =
+    fun getMyMeeting(@AuthUser user: User) =
         meetingService.getMyMeeting(user)
 
     @Operation(summary = "모임 상태 변경", description = "모임의 상태를 변경합니다.")
@@ -61,7 +60,7 @@ class MeetingController(
     fun updateStatus(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MeetingDto.UpdateStatus.Request,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ): MeetingDto.UpdateStatus.Response {
         return meetingService.updateStatus(id, request, user)
     }
@@ -77,7 +76,7 @@ class MeetingController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createInviteLink(
         @PathVariable id: UUID,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ): MeetingDto.InviteLink.CreateResponse = meetingInviteService.createInviteLink(id, user)
 
     @Operation(summary = "초대 코드로 모임 참여", description = "초대 코드를 사용하여 모임에 참여합니다.")
@@ -92,7 +91,7 @@ class MeetingController(
     @PostMapping("/invite/{code}")
     fun joinMeeting(
         @PathVariable code: String,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ): MeetingDto.InviteLink.JoinResponse {
         val member = meetingInviteService.joinWithInviteCode(code, user)
         return MeetingDto.InviteLink.JoinResponse(
@@ -112,7 +111,7 @@ class MeetingController(
     @GetMapping("/{id}/members")
     fun getMembers(
         @PathVariable id: UUID,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ): List<MeetingDto.Member.Response> {
         return meetingService.getMembers(id, user)
     }
@@ -133,7 +132,7 @@ class MeetingController(
     fun kickMember(
         @PathVariable meetingId: UUID,
         @PathVariable memberId: UUID,
-        @AuthenticationPrincipal user: User
+        @AuthUser user: User
     ) {
         meetingService.kickMember(meetingId, memberId, user)
     }

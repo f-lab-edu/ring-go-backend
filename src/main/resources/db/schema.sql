@@ -1,18 +1,43 @@
--- 1. 사용자 테이블
+-- 1. 사용자 기본 테이블
 CREATE TABLE user
 (
-    id          UUID         NOT NULL,
-    name        VARCHAR(50)  NOT NULL,
-    email       VARCHAR(320) NOT NULL,
-    role        VARCHAR(50)  NOT NULL DEFAULT 'NORMAL',
-    provider    VARCHAR(50)  NOT NULL,
-    provider_id VARCHAR(255) NOT NULL,
-    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id            UUID         NOT NULL,
+    email         VARCHAR(320) NOT NULL,
+    name          VARCHAR(50)  NOT NULL,
+    refresh_token VARCHAR(512),
+    role          VARCHAR(20)  NOT NULL DEFAULT 'NORMAL',
+    status        VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+    created_at    TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT uk_user_email UNIQUE (email),
-    CONSTRAINT uk_user_provider_id UNIQUE (provider, provider_id)
-);
+    CONSTRAINT uk_user_email UNIQUE (email)
+) COMMENT ='사용자';
+
+-- 1.1. 사용자 소셜 로그인 연결 정보 테이블
+CREATE TABLE user_connection
+(
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id     UUID         NOT NULL,
+    provider    VARCHAR(20)  NOT NULL,
+    provider_id VARCHAR(255) NOT NULL,
+    created_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_user_connection_provider UNIQUE (provider, provider_id),
+    CONSTRAINT fk_user_connection_user FOREIGN KEY (user_id) REFERENCES user (id)
+) COMMENT ='사용자 소셜 로그인 연결 정보';
+
+-- 사용자 프로필 테이블 (앱 내 프로필 정보)
+CREATE TABLE user_profile
+(
+    user_id      UUID          NOT NULL,
+    nickname     VARCHAR(50)   NOT NULL,
+    image_path   VARCHAR(255),
+    created_at   TIMESTAMP(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id),
+    CONSTRAINT fk_user_profile FOREIGN KEY (user_id) REFERENCES user (id)
+) COMMENT ='사용자 프로필';
 
 -- 2. 모임 테이블
 CREATE TABLE meeting

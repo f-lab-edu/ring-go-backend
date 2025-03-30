@@ -16,7 +16,7 @@ spring:
 
   sql:
     init:
-      mode: always  # SQL 스크립트 항상 실행
+      mode: always
       schema-locations: classpath:db/schema.sql
       data-locations: classpath:db/data.sql
 
@@ -43,10 +43,36 @@ spring:
       host: localhost
       port: 6379
 
+# OAuth2 로컬 환경 설정
+oauth2:
+  callback-base-url: http://localhost:8080
+  kakao:
+    client-id: 0350548cf26eaa50d6b9d5d5a6b3b10c
+    client-secret: QSoPWoed9aUPCRwAVYi0vjPknArpBlgv
+  naver:
+    client-id: ZcYVeKwZi_9RGrLRiNNu
+    client-secret: DA6oaXnMmN
+  google:
+    client-id: 80994025209-cobfiqpf9ocac16fq0c4tmm10rnk5r4v.apps.googleusercontent.com
+    client-secret: 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
+  apple:
+    client-id: ${APPLE_CLIENT_ID:local-apple-client-id}
+    client-secret: ${APPLE_CLIENT_SECRET:local-apple-client-secret}
+
+# JWT 비밀키 (환경별 관리)
+jwt:
+  secret: local-development-secret-key-should-be-replaced-in-production
+
 app:
   meeting:
     invite:
       base-url: "http://localhost:8080"
+    auth:
+      mock-enabled: false  # 기본적으로 비활성화 (인증 테스트 시)
+      mock-user-id: "bc0de3e8-d0e5-11ef-97fd-2cf05d34818a"
+
+server:
+  port: 8080
 
 swagger:
   url: http://localhost:8080
