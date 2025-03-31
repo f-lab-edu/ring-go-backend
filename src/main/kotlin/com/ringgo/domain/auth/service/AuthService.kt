@@ -31,33 +31,34 @@ class AuthService(
     fun login(provider: String, code: String): LoginResult {
         log.info { "소셜 로그인 시작 - 제공자: $provider" }
 
-        val providerEnum = try {
-            Provider.valueOf(provider.uppercase())
-        } catch (e: IllegalArgumentException) {
-            log.error { "유효하지 않은 제공자: $provider" }
-            throw ApplicationException(ErrorCode.INVALID_PROVIDER)
-        }
-
         try {
             // 1. 소셜 로그인 제공자 선택
             val oauthProvider = oAuthProviderFactory.getProvider(provider)
 
-            // 2. 소셜 로그인 액세스 토큰 획득
+            // 2. 제공자 enum 파싱
+            val providerEnum = try {
+                Provider.valueOf(provider.uppercase())
+            } catch (e: IllegalArgumentException) {
+                log.error { "유효하지 않은 제공자: $provider" }
+                throw ApplicationException(ErrorCode.INVALID_PROVIDER)
+            }
+
+            // 3. 소셜 로그인 액세스 토큰 획득
             log.debug { "소셜 액세스 토큰 획득 중 - 제공자: $providerEnum" }
             val socialToken = oauthProvider.getAccessToken(code)
 
-            // 3. 소셜 유저 정보 획득 (프로필 이미지 제외)
+            // 4. 소셜 유저 정보 획득 (프로필 이미지 제외)
             log.debug { "소셜 사용자 정보 획득 중 - 제공자: $providerEnum" }
             val socialUserInfo = oauthProvider.getUserInfo(socialToken, includeProfileImage = false)
 
-            // 4. 사용자 조회 또는 생성 (계정 통합 로직 적용)
+            // 5. 사용자 조회 또는 생성 (계정 통합 로직 적용)
             val (user, isNewUser) = findOrCreateUser(providerEnum, socialUserInfo.providerId, socialUserInfo.email, socialUserInfo.name, socialToken)
 
-            // 5. JWT 토큰 발급
+            // 6. JWT 토큰 발급
             val accessToken = jwtTokenProvider.createAccessToken(user.id.toString(), user.role.name)
             val refreshToken = jwtTokenProvider.createRefreshToken(user.id.toString())
 
-            // 6. 리프레시 토큰 업데이트
+            // 7. 리프레시 토큰 업데이트
             user.updateRefreshToken(refreshToken)
 
             log.info { "소셜 로그인 성공 - 사용자 ID: ${user.id}, 제공자: $providerEnum, 신규 사용자: $isNewUser" }
@@ -65,8 +66,13 @@ class AuthService(
                 user = user,
                 tokenPair = TokenPair(accessToken = accessToken, refreshToken = refreshToken)
             )
+        } catch (e: ApplicationException) {
+            // ApplicationException은 그대로 전달 (INVALID_PROVIDER, INACTIVE_USER 등)
+            log.error { "소셜 로그인 실패 - 제공자: $provider, 메시지: ${e.message}" }
+            throw e
         } catch (e: Exception) {
-            log.error { "소셜 로그인 실패 - 제공자: $providerEnum, 메시지: ${e.message}" }
+            // 기타 예외는 INTERNAL_SERVER_ERROR로 변환
+            log.error { "소셜 로그인 실패 - 제공자: $provider, 메시지: ${e.message}" }
             e.printStackTrace()
             throw ApplicationException(ErrorCode.INTERNAL_SERVER_ERROR)
         }

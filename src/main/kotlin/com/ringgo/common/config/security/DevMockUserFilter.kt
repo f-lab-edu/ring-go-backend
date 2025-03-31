@@ -5,6 +5,8 @@ import com.ringgo.domain.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -23,7 +25,7 @@ private val log = KotlinLogging.logger {}
 @Component
 @Profile("local", "dev") // 로컬, 개발 환경에서만 활성화
 class DevMockUserFilter(
-    private val userRepository: UserRepository,
+    @Autowired(required = false) private val userRepository: UserRepository?,
     @Value("\${app.auth.mock-enabled:false}") private val mockEnabled: Boolean,
     @Value("\${app.auth.mock-user-id:}") private val mockUserIdStr: String
 ) : OncePerRequestFilter() {
@@ -37,11 +39,11 @@ class DevMockUserFilter(
 
     override fun doFilterInternal(
         request: HttpServletRequest,
-        response: jakarta.servlet.http.HttpServletResponse,
+        response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        // 이미 인증이 있거나 mock이 비활성화되어 있으면 통과
-        if (!mockEnabled || SecurityContextHolder.getContext().authentication != null) {
+        // userRepository가 null이거나 이미 인증이 있거나 mock이 비활성화되어 있으면 통과
+        if (userRepository == null || !mockEnabled || SecurityContextHolder.getContext().authentication != null) {
             filterChain.doFilter(request, response)
             return
         }
@@ -76,6 +78,12 @@ class DevMockUserFilter(
      * 3. 없으면 첫 번째 사용자 반환
      */
     private fun findMockUser(): User? {
+        // userRepository가 null이면 null 반환
+        if (userRepository == null) {
+            log.debug { "UserRepository가 null입니다. 테스트 환경으로 추정됩니다." }
+            return null
+        }
+
         // 1. 설정된 ID로 찾기
         if (mockUserId != null) {
             userRepository.findById(mockUserId).orElse(null)?.let { return it }

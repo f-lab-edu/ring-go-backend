@@ -110,7 +110,12 @@ class GoogleOAuthProvider(
                 log.error { "필수 구글 사용자 정보 누락 - 이메일: ${email.isBlank()}, 공급자ID: ${providerId.isBlank()}" }
                 throw ApplicationException(ErrorCode.EXTERNAL_API_ERROR)
             } else {
-                UserInfo(email, name, providerId, profileImageUrl)
+                UserInfo(
+                    providerId = providerId,
+                    email = email,
+                    name = name,
+                    profileImageUrl = profileImageUrl,
+                )
             }
         } catch (e: Exception) {
             log.error { "구글 사용자 정보 획득 실패: ${e.message}" }

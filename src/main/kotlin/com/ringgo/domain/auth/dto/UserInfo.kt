@@ -4,10 +4,10 @@ import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
 
 data class UserInfo(
+    val providerId: String,
     val email: String,
     val name: String,
-    val providerId: String,
-    val profileImageUrl: String?
+    val profileImageUrl: String? = null,
 ) {
     init {
         if (email.isBlank()) {

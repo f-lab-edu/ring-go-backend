@@ -109,7 +109,12 @@ class KakaoOAuthProvider(
                 ?: email.split("@").first().takeIf { it.isNotBlank() }
                 ?: "Kakao User"
 
-            return UserInfo(email, name, providerId, profileImageUrl)
+            return UserInfo(
+                providerId = providerId,
+                email = email,
+                name = name,
+                profileImageUrl = profileImageUrl,
+            )
         } catch (e: Exception) {
             log.error { "카카오 사용자 정보 획득 실패: ${e.message}" }
             throw ApplicationException(ErrorCode.EXTERNAL_API_ERROR)
