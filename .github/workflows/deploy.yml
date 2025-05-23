@@ -52,6 +52,7 @@ jobs:
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
               -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
               -e SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
+              -e SPRING_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }} \
               -e SERVER_BASE_URL=${{ secrets.SERVER_BASE_URL }} \
               -e OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }} \
               -e OAUTH_KAKAO_CLIENT_SECRET=${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }} \
@@ -60,4 +61,35 @@ jobs:
               -e OAUTH_GOOGLE_CLIENT_ID=${{ secrets.OAUTH_GOOGLE_CLIENT_ID }} \
               -e OAUTH_GOOGLE_CLIENT_SECRET=${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+              -e SPRING_JPA_SHOW_SQL=true \
               ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+            
+            echo "Waiting for application to start..."
+            sleep 30
+            
+            # 컨테이너 상태 확인
+            if ! docker ps | grep ringgo; then
+              echo "❌ Container not running!"
+              docker logs ringgo
+              exit 1
+            fi
+            
+            # 애플리케이션 응답 확인
+            for i in {1..5}; do
+              if curl -f http://localhost:8080/actuator/health; then
+                echo "✅ Application is healthy!"
+                break
+              fi
+              if [ $i -eq 5 ]; then
+                echo "❌ Application not responding after 5 attempts!"
+                docker logs ringgo
+                exit 1
+              fi
+              echo "Attempt $i failed, retrying in 10 seconds..."
+              sleep 10
+            done
+            
+            echo "🚀 Deployment completed successfully!"
+            echo "Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
+            echo "Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
