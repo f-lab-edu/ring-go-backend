@@ -7,10 +7,20 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST}
-      port: ${SPRING_DATA_REDIS_PORT:6379}
+      port: ${SPRING_DATA_REDIS_PORT}
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,7 +28,7 @@ spring:
 
 # OAuth2 개발 환경 설정
 oauth2:
-  callback-base-url: ${SERVER_BASE_URL:http://localhost:8080}
+  callback-base-url: ${SERVER_BASE_URL}
   kakao:
     client-id: ${OAUTH_KAKAO_CLIENT_ID}
     client-secret: ${OAUTH_KAKAO_CLIENT_SECRET}
@@ -39,9 +49,9 @@ jwt:
 app:
   meeting:
     invite:
-      base-url: ${SERVER_BASE_URL:http://localhost:8080}
+      base-url: ${SERVER_BASE_URL}
 
 # Swagger 설정
 swagger:
-  url: ${SERVER_BASE_URL:http://localhost:8080}
+  url: ${SERVER_BASE_URL}
   description: Development Server
