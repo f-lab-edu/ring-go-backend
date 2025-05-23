@@ -8,4 +8,5 @@ COPY ${JAR_FILE} app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","/app.jar"]
+# JVM 메모리 옵션 추가
+ENTRYPOINT ["java", "-Xms100m", "-Xmx200m", "-XX:+UseG1GC", "-jar", "/app.jar"]

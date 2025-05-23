@@ -53,6 +53,7 @@ jobs:
               -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
               -e SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
               -e SPRING_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }} \
+              -e SPRING_KAFKA_CONSUMER_GROUP_ID: ${{ secrets.SPRING_KAFKA_CONSUMER_GROUP_ID }}
               -e SERVER_BASE_URL=${{ secrets.SERVER_BASE_URL }} \
               -e OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }} \
               -e OAUTH_KAKAO_CLIENT_SECRET=${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }} \
