@@ -1,5 +1,6 @@
 package com.ringgo.common.config.security
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -10,11 +11,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val devMockUserFilter: DevMockUserFilter
+    @Autowired(required = false)
+    private val devMockUserFilter: DevMockUserFilter?
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        return http
+        val httpSecurity = http
             .csrf { it.disable() }
             .headers { headers ->
                 headers.frameOptions { it.disable() }
@@ -27,8 +29,13 @@ class SecurityConfig(
                     ).permitAll()
                     .anyRequest().authenticated()
             }
-            .addFilterBefore(devMockUserFilter, UsernamePasswordAuthenticationFilter::class.java)
             .cors { it.disable() }
-            .build()
+
+        // local 프로필에서만 devMockUserFilter 사용
+        devMockUserFilter?.let { filter ->
+            httpSecurity.addFilterBefore(filter, UsernamePasswordAuthenticationFilter::class.java)
+        }
+
+        return httpSecurity.build()
     }
 }
