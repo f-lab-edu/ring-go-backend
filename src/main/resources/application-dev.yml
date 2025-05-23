@@ -2,11 +2,48 @@ spring:
   config:
     activate:
       on-profile: dev
+  # 데이터베이스 설정 추가
+  datasource:
+    url: jdbc:mysql://ring-go-dev-mysql.c3ke6aww6qcb.ap-northeast-2.rds.amazonaws.com:3306/ringgo
+    username: admin
+    password: ringgo123!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # Redis 설정 추가
+  data:
+    redis:
+      host: ring-go-dev-redis.w1bqev.0001.apn2.cache.amazonaws.com
+      port: 6379
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
+    show-sql: true
+
+# OAuth2 개발 환경 설정 (URL 변경)
+oauth2:
+  callback-base-url: http://3.38.103.179:8080
+  kakao:
+    client-id: 0350548cf26eaa50d6b9d5d5a6b3b10c
+    client-secret: QSoPWoed9aUPCRwAVYi0vjPknArpBlgv
+  naver:
+    client-id: ZcYVeKwZi_9RGrLRiNNu
+    client-secret: DA6oaXnMmN
+  google:
+    client-id: 80994025209-cobfiqpf9ocac16fq0c4tmm10rnk5r4v.apps.googleusercontent.com
+    client-secret: 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
+  apple:
+    client-id: ${APPLE_CLIENT_ID:}
+    client-secret: ${APPLE_CLIENT_SECRET:}
+
+# JWT 비밀키 설정
+jwt:
+  secret: your-256-bit-secret-key-should-be-very-long-and-secure
 
 app:
   meeting:
     invite:
-      base-url: "https://ring-go.dev"
+      base-url: "http://3.38.103.179:8080"
+
+# Swagger 설정
+swagger:
+  url: http://3.38.103.179:8080
+  description: Development Server
