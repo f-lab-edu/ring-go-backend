@@ -10,8 +10,8 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:db/schema.sql
-      data-locations: classpath:db/data.sql
+      schema-locations: classpath:db/schema-${spring.profiles.active}.sql
+      data-locations: classpath:db/data-${spring.profiles.active}.sql
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
     consumer:

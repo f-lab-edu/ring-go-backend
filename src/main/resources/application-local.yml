@@ -14,8 +14,8 @@ spring:
   sql:
     init:
       mode: always  # SQL 스크립트 항상 실행
-      schema-locations: classpath:db/schema.sql
-      data-locations: classpath:db/data.sql
+      schema-locations: classpath:db/schema-${spring.profiles.active}.sql
+      data-locations: classpath:db/data-${spring.profiles.active}.sql
   jpa:
     hibernate:
       ddl-auto: none
