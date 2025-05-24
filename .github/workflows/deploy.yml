@@ -89,15 +89,11 @@ jobs:
             
             echo "✅ Container is running"
             
-            # 애플리케이션 응답 확인 (다양한 endpoint 시도)
+            # 애플리케이션 응답 확인 (스웨거 엔드포인트 체크)
             echo "🔍 Checking application health..."
             for i in {1..6}; do
-              # 기본 엔드포인트들 시도
-              if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
-                echo "✅ Application is healthy! (actuator/health)"
-                break
-              elif curl -f -s http://localhost:8080/ >/dev/null 2>&1; then
-                echo "✅ Application is responding! (root endpoint)"
+              if curl -f -s http://localhost:8080/swagger-ui/index.html >/dev/null 2>&1; then
+                echo "✅ Application is responding! (swagger endpoint)"
                 break
               elif [ $i -eq 6 ]; then
                 echo "❌ Application not responding after 6 attempts!"
@@ -114,7 +110,7 @@ jobs:
             echo "🎉 Deployment completed successfully!"
             echo "📱 Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
             echo "📋 Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
-            echo "🔧 Health Check: http://${{ secrets.AWS_SERVER_IP }}:8080/actuator/health"
+            echo "🔧 Health Check available at: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
             
             # 최종 상태 출력
             echo "📊 Final container status:"
