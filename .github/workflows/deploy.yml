@@ -41,56 +41,82 @@ jobs:
           username: ${{ secrets.AWS_SERVER_USERNAME }}
           key: ${{ secrets.AWS_SERVER_PRIVATE_KEY }}
           script: |
+            echo "🚀 Starting deployment..."
+            
+            # 최신 이미지 pull
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+            
+            # 기존 컨테이너 정리
             docker stop ringgo || true
             docker rm ringgo || true
+            
+            # 새 컨테이너 시작 (메모리 및 CPU 제한 포함)
             docker run -d --name ringgo \
+              --restart unless-stopped \
+              --memory=400m \
+              --cpus=0.8 \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=dev \
-              -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
-              -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
-              -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
-              -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
-              -e SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
-              -e SPRING_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }} \
-              -e SPRING_KAFKA_CONSUMER_GROUP_ID: ${{ secrets.SPRING_KAFKA_CONSUMER_GROUP_ID }}
-              -e SERVER_BASE_URL=${{ secrets.SERVER_BASE_URL }} \
-              -e OAUTH_KAKAO_CLIENT_ID=${{ secrets.OAUTH_KAKAO_CLIENT_ID }} \
-              -e OAUTH_KAKAO_CLIENT_SECRET=${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }} \
-              -e OAUTH_NAVER_CLIENT_ID=${{ secrets.OAUTH_NAVER_CLIENT_ID }} \
-              -e OAUTH_NAVER_CLIENT_SECRET=${{ secrets.OAUTH_NAVER_CLIENT_SECRET }} \
-              -e OAUTH_GOOGLE_CLIENT_ID=${{ secrets.OAUTH_GOOGLE_CLIENT_ID }} \
-              -e OAUTH_GOOGLE_CLIENT_SECRET=${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
+              -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
+              -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
+              -e SPRING_DATA_REDIS_HOST="${{ secrets.SPRING_DATA_REDIS_HOST }}" \
+              -e SPRING_DATA_REDIS_PORT="${{ secrets.SPRING_DATA_REDIS_PORT }}" \
+              -e SPRING_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }}" \
+              -e SPRING_KAFKA_CONSUMER_GROUP_ID="${{ secrets.SPRING_KAFKA_CONSUMER_GROUP_ID }}" \
+              -e SERVER_BASE_URL="${{ secrets.SERVER_BASE_URL }}" \
+              -e OAUTH_KAKAO_CLIENT_ID="${{ secrets.OAUTH_KAKAO_CLIENT_ID }}" \
+              -e OAUTH_KAKAO_CLIENT_SECRET="${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }}" \
+              -e OAUTH_NAVER_CLIENT_ID="${{ secrets.OAUTH_NAVER_CLIENT_ID }}" \
+              -e OAUTH_NAVER_CLIENT_SECRET="${{ secrets.OAUTH_NAVER_CLIENT_SECRET }}" \
+              -e OAUTH_GOOGLE_CLIENT_ID="${{ secrets.OAUTH_GOOGLE_CLIENT_ID }}" \
+              -e OAUTH_GOOGLE_CLIENT_SECRET="${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
               -e SPRING_JPA_SHOW_SQL=true \
               ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
             
-            echo "Waiting for application to start..."
+            echo "⏳ Waiting for application to start..."
             sleep 30
             
             # 컨테이너 상태 확인
             if ! docker ps | grep ringgo; then
               echo "❌ Container not running!"
+              echo "Container logs:"
               docker logs ringgo
               exit 1
             fi
             
-            # 애플리케이션 응답 확인
-            for i in {1..5}; do
-              if curl -f http://localhost:8080/actuator/health; then
-                echo "✅ Application is healthy!"
+            echo "✅ Container is running"
+            
+            # 애플리케이션 응답 확인 (다양한 endpoint 시도)
+            echo "🔍 Checking application health..."
+            for i in {1..6}; do
+              # 기본 엔드포인트들 시도
+              if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
+                echo "✅ Application is healthy! (actuator/health)"
                 break
-              fi
-              if [ $i -eq 5 ]; then
-                echo "❌ Application not responding after 5 attempts!"
-                docker logs ringgo
+              elif curl -f -s http://localhost:8080/ >/dev/null 2>&1; then
+                echo "✅ Application is responding! (root endpoint)"
+                break
+              elif [ $i -eq 6 ]; then
+                echo "❌ Application not responding after 6 attempts!"
+                echo "Application logs:"
+                docker logs ringgo --tail 50
+                echo "Container stats:"
+                docker stats ringgo --no-stream
                 exit 1
               fi
-              echo "Attempt $i failed, retrying in 10 seconds..."
-              sleep 10
+              echo "Attempt $i failed, retrying in 15 seconds..."
+              sleep 15
             done
             
-            echo "🚀 Deployment completed successfully!"
-            echo "Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
-            echo "Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
+            echo "🎉 Deployment completed successfully!"
+            echo "📱 Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
+            echo "📋 Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
+            echo "🔧 Health Check: http://${{ secrets.AWS_SERVER_IP }}:8080/actuator/health"
+            
+            # 최종 상태 출력
+            echo "📊 Final container status:"
+            docker ps | grep ringgo
+            docker stats ringgo --no-stream
