@@ -54,10 +54,25 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOriginPatterns = listOf("https://docs.ring-go.kr")
+
+        // 프로파일별 설정 (환경 변수로 구분)
+        val activeProfile = System.getenv("SPRING_PROFILES_ACTIVE") ?: "local"
+
+        if (activeProfile == "prod") {
+            // 프로덕션: 특정 도메인만 허용
+            configuration.allowedOriginPatterns = listOf(
+                "https://docs.ring-go.kr",
+                "https://api.ring-go.kr"
+            )
+            configuration.allowCredentials = true
+        } else {
+            // 개발환경: 모든 Origin 허용
+            configuration.allowedOriginPatterns = listOf("*")
+            configuration.allowCredentials = false  // 와일드카드 사용시 false 필수
+        }
+
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
-        configuration.allowCredentials = true
         configuration.maxAge = 3600
 
         val source = UrlBasedCorsConfigurationSource()
