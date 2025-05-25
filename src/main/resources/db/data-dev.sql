@@ -1,3 +1,11 @@
+-- 데이터 초기화 (외래키 제약조건 순서 고려)
+DELETE FROM reaction;
+DELETE FROM expense;
+DELETE FROM activity;
+DELETE FROM member;
+DELETE FROM meeting;
+DELETE FROM `user`;
+
 -- 1. 사용자 데이터 삽입
 INSERT INTO `user` (id, name, email, role, provider, provider_id)
 VALUES ('bc0de3e8-d0e5-11ef-97fd-2cf05d34818a', '신짱구', 'shinnosuke@test.com', 'NORMAL', 'KAKAO', 'kakao_123'),
