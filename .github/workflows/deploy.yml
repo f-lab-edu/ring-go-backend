@@ -92,8 +92,11 @@ jobs:
             # 애플리케이션 응답 확인 (스웨거 엔드포인트 체크)
             echo "🔍 Checking application health..."
             for i in {1..6}; do
-              if curl -f -s http://localhost:8080/swagger-ui/index.html >/dev/null 2>&1; then
-                echo "✅ Application is responding! (swagger endpoint)"
+              if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
+                echo "✅ Application is responding! (health endpoint)"
+                break
+              elif curl -f -s http://localhost:8080/ >/dev/null 2>&1; then
+                echo "✅ Application is responding! (root endpoint)"
                 break
               elif [ $i -eq 6 ]; then
                 echo "❌ Application not responding after 6 attempts!"

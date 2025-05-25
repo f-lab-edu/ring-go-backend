@@ -1,4 +1,5 @@
-import com.ringgo.common.config.security.DevMockUserFilter
+package com.ringgo.common.config.security
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -30,16 +31,18 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(
+                        "/actuator/health",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/api/v1/auth/**"
+                        "/v3/api-docs/**"
                     ).permitAll()
-                    .anyRequest().authenticated()
+                    // TODO: 임시로 모든 API 허용, JWT 인증 시스템 구현 후 제거 예정
+                    .anyRequest().permitAll()
             }
             .cors { cors ->
                 cors.configurationSource(corsConfigurationSource())
             }
 
+        // devMockUserFilter (local 환경에서만 동작)
         devMockUserFilter?.let { filter ->
             http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter::class.java)
         }
@@ -50,10 +53,11 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOriginPatterns = listOf("http://docs.ring-go.kr")
+        configuration.allowedOriginPatterns = listOf("https://docs.ring-go.kr")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
+        configuration.maxAge = 3600
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
