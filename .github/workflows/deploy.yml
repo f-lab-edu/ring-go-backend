@@ -89,12 +89,26 @@ jobs:
             
             echo "✅ Container is running"
             
-            # 애플리케이션 응답 확인 (스웨거 엔드포인트 체크)
+            # 애플리케이션 응답 확인 (Actuator Health Check)
             echo "🔍 Checking application health..."
             for i in {1..6}; do
+              # 우선순위 1: Actuator Health 엔드포인트
               if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
-                echo "✅ Application is responding! (health endpoint)"
+                echo "✅ Application is responding! (actuator/health endpoint)"
+                
+                # Health 상태 세부 확인
+                HEALTH_STATUS=$(curl -s http://localhost:8080/actuator/health | grep -o '"status":"[^"]*' | cut -d'"' -f4)
+                if [ "$HEALTH_STATUS" = "UP" ]; then
+                  echo "✅ Application health status: UP"
+                else
+                  echo "⚠️  Application health status: $HEALTH_STATUS"
+                fi
                 break
+              # 우선순위 2: Swagger UI 엔드포인트
+              elif curl -f -s http://localhost:8080/swagger-ui/index.html >/dev/null 2>&1; then
+                echo "✅ Application is responding! (swagger endpoint)"
+                break
+              # 우선순위 3: 루트 엔드포인트
               elif curl -f -s http://localhost:8080/ >/dev/null 2>&1; then
                 echo "✅ Application is responding! (root endpoint)"
                 break
@@ -113,7 +127,7 @@ jobs:
             echo "🎉 Deployment completed successfully!"
             echo "📱 Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
             echo "📋 Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
-            echo "🔧 Health Check available at: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
+            echo "🔧 Health Check: http://${{ secrets.AWS_SERVER_IP }}:8080/actuator/health"
             
             # 최종 상태 출력
             echo "📊 Final container status:"

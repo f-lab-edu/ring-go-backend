@@ -20,3 +20,20 @@ logging:
 
 server:
   port: 8080
+
+# Spring Boot Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: always
+  health:
+    defaults:
+      enabled: true

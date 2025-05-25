@@ -63,3 +63,17 @@ app:
 swagger:
   url: ${SERVER_BASE_URL}
   description: Development Server
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 
+          - health
+          - info
+          - metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
