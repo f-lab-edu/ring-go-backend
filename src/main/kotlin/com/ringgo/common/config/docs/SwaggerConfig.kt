@@ -8,12 +8,15 @@ import io.swagger.v3.oas.models.servers.Server
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class SwaggerConfig(
     @Value("\${swagger.url}") private val url: String,
     @Value("\${swagger.description}") private val description: String,
-) {
+) : WebMvcConfigurer {
+
     @Bean
     fun openAPI(): OpenAPI = OpenAPI()
         .info(
@@ -36,4 +39,12 @@ class SwaggerConfig(
                         .bearerFormat("JWT")
                 )
         )
+
+    /**
+     * docs.ring-go.kr/ 접근 시 /api로 리다이렉트
+     */
+    override fun addViewControllers(registry: ViewControllerRegistry) {
+        registry.addViewController("/")
+            .setViewName("redirect:/api")
+    }
 }

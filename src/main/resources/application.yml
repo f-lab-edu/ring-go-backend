@@ -25,9 +25,11 @@ server:
 # SpringDoc OpenAPI 설정
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
+    path: /api
     config-url: /v3/api-docs/swagger-config
     url: /v3/api-docs
+    disable-swagger-default-url: true
+    use-root-path: true
   api-docs:
     path: /v3/api-docs
   show-actuator: true
