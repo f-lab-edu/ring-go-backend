@@ -20,6 +20,19 @@ logging:
 
 server:
   port: 8080
+  forward-headers-strategy: framework
+
+# SpringDoc OpenAPI 설정
+springdoc:
+  swagger-ui:
+    path: /api
+    config-url: /api/v3/api-docs/swagger-config
+    url: /api/v3/api-docs
+  api-docs:
+    path: /api/v3/api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
 
 # Spring Boot Actuator 설정
 management:
