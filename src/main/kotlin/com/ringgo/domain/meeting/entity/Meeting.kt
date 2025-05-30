@@ -28,7 +28,7 @@ class Meeting(
     var status: MeetingStatus = MeetingStatus.ACTIVE,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false)
+    @Column(name = "creator_id", nullable = false)
     val creator: User,
 ) {
     @CreatedDate

@@ -1,4 +1,4 @@
-package com.ringgo.domain.member.entity
+ package com.ringgo.domain.member.entity
 
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
@@ -33,11 +33,11 @@ class Member(
     val id: UUID = UUID.randomUUID(),
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meeting_id", nullable = false)
+    @Column(name = "meeting_id", nullable = false)
     val meeting: Meeting,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     val user: User,
 
     @Enumerated(EnumType.STRING)

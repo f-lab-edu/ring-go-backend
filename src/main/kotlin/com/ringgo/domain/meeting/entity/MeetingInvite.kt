@@ -1,4 +1,4 @@
-package com.ringgo.domain.meeting.entity
+ package com.ringgo.domain.meeting.entity
 
 import com.ringgo.common.exception.ApplicationException
 import com.ringgo.common.exception.ErrorCode
@@ -21,14 +21,14 @@ class MeetingInvite(
     val id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meeting_id", nullable = false)
+    @Column(name = "meeting_id", nullable = false)
     val meeting: Meeting,
 
     @Embedded
     val code: Code,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false)
+    @Column(name = "creator_id", nullable = false)
     val creator: User,
 
     @Column(nullable = false)
