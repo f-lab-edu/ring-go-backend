@@ -1,4 +1,4 @@
--- 기존 테이블 삭제 (순서 중요: 외래키 역순)
+ -- 기존 테이블 삭제 (역순으로)
 DROP TABLE IF EXISTS reaction;
 DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS payment;
@@ -42,8 +42,7 @@ CREATE TABLE meeting
     creator_id CHAR(36)      NOT NULL COMMENT '생성자 ID',
     created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_meeting_creator FOREIGN KEY (creator_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='모임';
 
 -- 3. 이벤트 테이블
@@ -75,9 +74,7 @@ CREATE TABLE member
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_member_meeting_user UNIQUE (meeting_id, user_id),
-    CONSTRAINT fk_member_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
-    CONSTRAINT fk_member_user FOREIGN KEY (user_id) REFERENCES `user` (id)
+    CONSTRAINT uk_member_meeting_user UNIQUE (meeting_id, user_id)
 ) COMMENT ='모임원';
 
 -- 5. 활동 테이블
@@ -89,9 +86,7 @@ CREATE TABLE activity
     creator_id CHAR(36)     NOT NULL COMMENT '생성자 ID',
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_activity_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
-    CONSTRAINT fk_activity_creator FOREIGN KEY (creator_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='활동';
 
 -- 6. 응모권 테이블
@@ -103,8 +98,7 @@ CREATE TABLE ticket
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_ticket_user UNIQUE (user_id),
-    CONSTRAINT fk_ticket_user FOREIGN KEY (user_id) REFERENCES `user` (id)
+    CONSTRAINT uk_ticket_user UNIQUE (user_id)
 ) COMMENT ='응모권';
 
 -- 7. 이벤트 참여 테이블
@@ -117,9 +111,7 @@ CREATE TABLE event_participation
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_event_participation_event_user UNIQUE (event_id, user_id),
-    CONSTRAINT fk_event_participation_event FOREIGN KEY (event_id) REFERENCES event (id),
-    CONSTRAINT fk_event_participation_user FOREIGN KEY (user_id) REFERENCES `user` (id)
+    CONSTRAINT uk_event_participation_event_user UNIQUE (event_id, user_id)
 ) COMMENT ='이벤트 참여';
 
 -- 8. 지출 테이블
@@ -134,9 +126,7 @@ CREATE TABLE expense
     expense_date DATE            NOT NULL COMMENT '지출일자',
     created_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_expense_activity FOREIGN KEY (activity_id) REFERENCES activity (id),
-    CONSTRAINT fk_expense_creator FOREIGN KEY (creator_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='지출';
 
 -- 9. 응모권 이력 테이블
@@ -149,9 +139,7 @@ CREATE TABLE ticket_history
     amount      INT          NOT NULL COMMENT '수량',
     description TEXT         COMMENT '설명',
     created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_ticket_history_ticket FOREIGN KEY (ticket_id) REFERENCES ticket (id),
-    CONSTRAINT fk_ticket_history_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id)
+    PRIMARY KEY (id)
 ) COMMENT ='응모권 이력';
 
 -- 10. 결제 테이블
@@ -165,8 +153,7 @@ CREATE TABLE payment
     created_at             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_payment_event_participation UNIQUE (event_participation_id),
-    CONSTRAINT fk_payment_event_participation FOREIGN KEY (event_participation_id) REFERENCES event_participation (id)
+    CONSTRAINT uk_payment_event_participation UNIQUE (event_participation_id)
 ) COMMENT ='결제';
 
 -- 11. 댓글 테이블
@@ -178,9 +165,7 @@ CREATE TABLE comment
     content    TEXT         NOT NULL COMMENT '내용',
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_comment_expense FOREIGN KEY (expense_id) REFERENCES expense (id),
-    CONSTRAINT fk_comment_writer FOREIGN KEY (writer_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='댓글';
 
 -- 12. 반응 테이블
@@ -192,9 +177,7 @@ CREATE TABLE reaction
     emoji      VARCHAR(10)  NOT NULL COMMENT '이모지',
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_reaction_expense_reactor UNIQUE (expense_id, reactor_id),
-    CONSTRAINT fk_reaction_expense FOREIGN KEY (expense_id) REFERENCES expense (id),
-    CONSTRAINT fk_reaction_reactor FOREIGN KEY (reactor_id) REFERENCES `user` (id)
+    CONSTRAINT uk_reaction_expense_reactor UNIQUE (expense_id, reactor_id)
 ) COMMENT ='반응';
 
 -- 13. 투표 테이블
@@ -209,9 +192,7 @@ CREATE TABLE vote
     status     VARCHAR(20)     NOT NULL DEFAULT 'PROGRESS' COMMENT '상태(PROGRESS/APPROVED/REJECTED)',
     created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_vote_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
-    CONSTRAINT fk_vote_creator FOREIGN KEY (creator_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='투표';
 
 -- 14. 투표 참여 테이블
@@ -224,9 +205,7 @@ CREATE TABLE vote_participation
     voted_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '투표일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_vote_participation_vote_voter UNIQUE (vote_id, voter_id),
-    CONSTRAINT fk_vote_participation_vote FOREIGN KEY (vote_id) REFERENCES vote (id),
-    CONSTRAINT fk_vote_participation_voter FOREIGN KEY (voter_id) REFERENCES `user` (id)
+    CONSTRAINT uk_vote_participation_vote_voter UNIQUE (vote_id, voter_id)
 ) COMMENT ='투표 참여';
 
 -- 15. 알림 테이블
@@ -240,8 +219,7 @@ CREATE TABLE notification
     fcm_token   VARCHAR(255)  NULL COMMENT 'FCM 토큰',
     data        TEXT          NULL COMMENT '추가 데이터',
     created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
-    PRIMARY KEY (id),
-    CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES `user` (id)
+    PRIMARY KEY (id)
 ) COMMENT ='알림';
 
 -- 16. 모임 초대 테이블
@@ -255,9 +233,7 @@ CREATE TABLE meeting_invite
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
     PRIMARY KEY (id),
-    CONSTRAINT uk_meeting_invite_code UNIQUE (code),
-    CONSTRAINT fk_meeting_invite_meeting FOREIGN KEY (meeting_id) REFERENCES meeting (id),
-    CONSTRAINT fk_meeting_invite_creator FOREIGN KEY (creator_id) REFERENCES `user` (id)
+    CONSTRAINT uk_meeting_invite_code UNIQUE (code)
 ) COMMENT ='초대 링크';
 
 -- 인덱스 생성
