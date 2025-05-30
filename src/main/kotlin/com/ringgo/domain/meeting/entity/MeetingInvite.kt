@@ -21,14 +21,14 @@ class MeetingInvite(
     val id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "meeting_id", nullable = false)
+    @JoinColumn(name = "meeting_id", nullable = false)
     val meeting: Meeting,
 
     @Embedded
     val code: Code,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "creator_id", nullable = false)
+    @JoinColumn(name = "creator_id", nullable = false)
     val creator: User,
 
     @Column(nullable = false)

@@ -33,11 +33,11 @@ class Member(
     val id: UUID = UUID.randomUUID(),
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "meeting_id", nullable = false)
+    @JoinColumn(name = "meeting_id", nullable = false)
     val meeting: Meeting,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
     @Enumerated(EnumType.STRING)
