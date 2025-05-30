@@ -41,3 +41,7 @@ out/
 
 ### structure ###
 structure.txt
+
+.env
+*.env
+application-local-secrets.yml

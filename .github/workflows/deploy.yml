@@ -1,10 +1,12 @@
-name: Deploy to AWS Server
+name: Deploy to MVP Development Server
 on:
   push:
     branches: [ "develop" ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: development  # GitHub Environment 보호
 
     steps:
       - uses: actions/checkout@v4
@@ -32,25 +34,31 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:dev-${{ github.sha }}
 
-      - name: Deploy to AWS Server
+      - name: Deploy to Development Server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.AWS_SERVER_IP }}
           username: ${{ secrets.AWS_SERVER_USERNAME }}
           key: ${{ secrets.AWS_SERVER_PRIVATE_KEY }}
           script: |
-            echo "🚀 Starting deployment..."
+            echo "🚀 Starting MVP development deployment..."
+            echo "📦 Deploying commit: ${{ github.sha }}"
             
             # 최신 이미지 pull
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:dev-${{ github.sha }}
             
-            # 기존 컨테이너 정리
+            # 기존 컨테이너 백업 및 정리
+            if docker ps | grep -q ringgo; then
+              echo "📦 Creating backup of current container..."
+              docker commit ringgo ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:backup-$(date +%Y%m%d-%H%M%S)
+            fi
+            
             docker stop ringgo || true
             docker rm ringgo || true
             
-            # 새 컨테이너 시작 (메모리 및 CPU 제한 포함)
+            # MVP 개발용 컨테이너 시작 (개발 최적화 설정)
             docker run -d --name ringgo \
               --restart unless-stopped \
               --memory=400m \
@@ -65,6 +73,7 @@ jobs:
               -e SPRING_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }}" \
               -e SPRING_KAFKA_CONSUMER_GROUP_ID="${{ secrets.SPRING_KAFKA_CONSUMER_GROUP_ID }}" \
               -e SERVER_BASE_URL="${{ secrets.SERVER_BASE_URL }}" \
+              -e SWAGGER_DESCRIPTION="${{ secrets.SWAGGER_DESCRIPTION }}" \
               -e OAUTH_KAKAO_CLIENT_ID="${{ secrets.OAUTH_KAKAO_CLIENT_ID }}" \
               -e OAUTH_KAKAO_CLIENT_SECRET="${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }}" \
               -e OAUTH_NAVER_CLIENT_ID="${{ secrets.OAUTH_NAVER_CLIENT_ID }}" \
@@ -74,28 +83,30 @@ jobs:
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
               -e SPRING_JPA_SHOW_SQL=true \
-              ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:latest
+              -e LOG_SQL_LEVEL=DEBUG \
+              -e LOG_SPRING_SECURITY_LEVEL=INFO \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:dev-${{ github.sha }}
             
-            echo "⏳ Waiting for application to start..."
+            echo "⏳ Waiting for MVP application to start..."
             sleep 30
             
             # 컨테이너 상태 확인
             if ! docker ps | grep ringgo; then
               echo "❌ Container not running!"
-              echo "Container logs:"
-              docker logs ringgo
+              echo "📋 Container logs:"
+              docker logs ringgo --tail 30
               exit 1
             fi
             
             echo "✅ Container is running"
             
-            # 애플리케이션 응답 확인 (Actuator Health Check)
-            echo "🔍 Checking application health..."
-            for i in {1..6}; do
+            # MVP 개발용 상세 헬스체크
+            echo "🔍 Checking MVP application health..."
+            for i in {1..8}; do
               # 우선순위 1: Actuator Health 엔드포인트
               if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
-                echo "✅ Application is responding! (actuator/health endpoint)"
-                
+                echo "✅ Actuator health endpoint responding!"
+            
                 # Health 상태 세부 확인
                 HEALTH_STATUS=$(curl -s http://localhost:8080/actuator/health | grep -o '"status":"[^"]*' | cut -d'"' -f4)
                 if [ "$HEALTH_STATUS" = "UP" ]; then
@@ -104,32 +115,46 @@ jobs:
                   echo "⚠️  Application health status: $HEALTH_STATUS"
                 fi
                 break
-              # 우선순위 2: Swagger UI 엔드포인트
-              elif curl -f -s http://localhost:8080/swagger-ui/index.html >/dev/null 2>&1; then
-                echo "✅ Application is responding! (swagger endpoint)"
+            
+              # 우선순위 2: Swagger UI 엔드포인트 (yml 설정에 맞춤)
+              elif curl -f -s http://localhost:8080/docs >/dev/null 2>&1; then
+                echo "✅ Swagger UI responding at /docs"
                 break
-              # 우선순위 3: 루트 엔드포인트
+            
+              # 우선순위 3: 개발용 API 엔드포인트
+              elif curl -f -s http://localhost:8080/v1/health >/dev/null 2>&1; then
+                echo "✅ Development API responding!"
+                break
+            
+              # 우선순위 4: 루트 엔드포인트
               elif curl -f -s http://localhost:8080/ >/dev/null 2>&1; then
-                echo "✅ Application is responding! (root endpoint)"
+                echo "✅ Root endpoint responding"
                 break
-              elif [ $i -eq 6 ]; then
-                echo "❌ Application not responding after 6 attempts!"
-                echo "Application logs:"
+            
+              elif [ $i -eq 8 ]; then
+                echo "❌ MVP application not responding after 8 attempts!"
+                echo "📋 Application logs:"
                 docker logs ringgo --tail 50
-                echo "Container stats:"
+                echo "📊 Container stats:"
                 docker stats ringgo --no-stream
                 exit 1
               fi
-              echo "Attempt $i failed, retrying in 15 seconds..."
+              echo "🔄 Health check attempt $i/8 failed, retrying in 15 seconds..."
               sleep 15
             done
             
-            echo "🎉 Deployment completed successfully!"
+            echo "🎉 MVP Development deployment completed successfully!"
             echo "📱 Application URL: http://${{ secrets.AWS_SERVER_IP }}:8080"
-            echo "📋 Swagger URL: http://${{ secrets.AWS_SERVER_IP }}:8080/swagger-ui/index.html"
+            echo "📋 Swagger UI: http://${{ secrets.AWS_SERVER_IP }}:8080/docs"
             echo "🔧 Health Check: http://${{ secrets.AWS_SERVER_IP }}:8080/actuator/health"
+            echo "⚙️  Development API: http://${{ secrets.AWS_SERVER_IP }}:8080/v1/health"
+            echo "🧪 Config Test: http://${{ secrets.AWS_SERVER_IP }}:8080/v1/dev/config/summary"
             
             # 최종 상태 출력
             echo "📊 Final container status:"
             docker ps | grep ringgo
             docker stats ringgo --no-stream
+            
+            # 이전 이미지 정리 (디스크 절약)
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f --filter "until=72h"

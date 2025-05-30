@@ -1,0 +1,50 @@
+# application-prod.yml (운영서버 특화 설정만)
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # 운영 MySQL 설정
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: never  # 운영에서는 스키마 초기화 금지
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영에서는 반드시 validate
+    show-sql: false       # 운영에서는 SQL 로그 비활성화
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# 운영용 보안 강화 로깅
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.springframework.data: WARN
+    org.springdoc: WARN
+
+# 운영용 보안 강화 Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+
+# 운영용 Swagger 설정 오버라이드
+swagger:
+  description: "Production Server - Ring-Go"

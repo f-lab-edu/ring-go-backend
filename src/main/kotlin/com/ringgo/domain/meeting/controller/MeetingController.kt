@@ -17,7 +17,7 @@ import java.util.*
 
 @Tag(name = "Meeting", description = "모임 API")
 @RestController
-@RequestMapping("/api/v1/meeting")
+@RequestMapping("/v1/meeting")
 class MeetingController(
     private val meetingService: MeetingService,
     private val meetingInviteService: MeetingInviteService,

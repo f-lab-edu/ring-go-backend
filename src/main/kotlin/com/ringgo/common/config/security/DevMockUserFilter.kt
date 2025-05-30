@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-@Profile("local")
+@Profile("local", "dev")
 class DevMockUserFilter : Filter {
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         if (SecurityContextHolder.getContext().authentication == null) {

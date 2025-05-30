@@ -1,0 +1,90 @@
+# 출시할 때 .template 제거하고 활성화
+name: Deploy to Production Server
+on:
+  push:
+    branches: [ "main" ]  # main 브랜치에서만 실행
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production  # GitHub Environment로 수동 승인 필요
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:prod-${{ github.sha }}
+
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_SERVER_IP }}      # 운영 서버 IP
+          username: ${{ secrets.PROD_SERVER_USERNAME }}
+          key: ${{ secrets.PROD_SERVER_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Starting PRODUCTION deployment..."
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:prod-${{ github.sha }}
+
+            docker stop ringgo || true
+            docker rm ringgo || true
+
+            docker run -d --name ringgo \
+              --restart unless-stopped \
+              --memory=400m \
+              --cpus=0.8 \
+              -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
+              -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
+              -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
+              -e SPRING_DATA_REDIS_HOST="${{ secrets.SPRING_DATA_REDIS_HOST }}" \
+              -e SPRING_DATA_REDIS_PORT="${{ secrets.SPRING_DATA_REDIS_PORT }}" \
+              -e SPRING_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.SPRING_KAFKA_BOOTSTRAP_SERVERS }}" \
+              -e SPRING_KAFKA_CONSUMER_GROUP_ID="${{ secrets.SPRING_KAFKA_CONSUMER_GROUP_ID }}" \
+              -e SERVER_BASE_URL="${{ secrets.SERVER_BASE_URL }}" \
+              -e OAUTH_KAKAO_CLIENT_ID="${{ secrets.OAUTH_KAKAO_CLIENT_ID }}" \
+              -e OAUTH_KAKAO_CLIENT_SECRET="${{ secrets.OAUTH_KAKAO_CLIENT_SECRET }}" \
+              -e OAUTH_NAVER_CLIENT_ID="${{ secrets.OAUTH_NAVER_CLIENT_ID }}" \
+              -e OAUTH_NAVER_CLIENT_SECRET="${{ secrets.OAUTH_NAVER_CLIENT_SECRET }}" \
+              -e OAUTH_GOOGLE_CLIENT_ID="${{ secrets.OAUTH_GOOGLE_CLIENT_ID }}" \
+              -e OAUTH_GOOGLE_CLIENT_SECRET="${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
+              -e SPRING_JPA_SHOW_SQL=false \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ringgo:prod-${{ github.sha }}
+
+            sleep 45
+            for i in {1..10}; do
+              if curl -f -s http://localhost:8080/actuator/health >/dev/null 2>&1; then
+                echo "✅ PRODUCTION deployment successful!"
+                break
+              elif [ $i -eq 10 ]; then
+                echo "❌ PRODUCTION deployment failed!"
+                docker logs ringgo --tail 50
+                exit 1
+              fi
+              echo "Production health check attempt $i/10..."
+              sleep 10
+            done

@@ -1,7 +1,9 @@
+# ── application.yml (공통) ──
 spring:
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
+  # ── JPA 설정 ──
   jpa:
     hibernate:
       ddl-auto: none
@@ -12,23 +14,71 @@ spring:
         jdbc:
           time_zone: UTC
 
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql: TRACE
-    org.springframework.data: DEBUG
+  # ── Kafka 설정 ──
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:ringgo-group}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+  # ── Redis 설정 ──
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+
+# ── 서버 설정 ──
 server:
   port: 8080
   forward-headers-strategy: framework
 
-# SpringDoc OpenAPI 설정
+# ── OAuth2 설정 ──
+oauth2:
+  callback-base-url: ${SERVER_BASE_URL:http://localhost:8080}
+  kakao:
+    client-id: ${OAUTH_KAKAO_CLIENT_ID:}
+    client-secret: ${OAUTH_KAKAO_CLIENT_SECRET:}
+  naver:
+    client-id: ${OAUTH_NAVER_CLIENT_ID:}
+    client-secret: ${OAUTH_NAVER_CLIENT_SECRET:}
+  google:
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:}
+  apple:
+    client-id: ${APPLE_CLIENT_ID:}
+    client-secret: ${APPLE_CLIENT_SECRET:}
+
+# ── JWT 설정 ──
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: ${JWT_EXPIRATION:3600000}
+
+# ── 앱 설정 ──
+app:
+  meeting:
+    invite:
+      base-url: ${API_BASE_URL:http://localhost:8080}
+
+# ── Swagger 설정 ──
+swagger:
+  url: ${API_BASE_URL:http://localhost:8080}
+  description: ${SWAGGER_DESCRIPTION:Ring-Go API Server}
+
+# ── SpringDoc OpenAPI 설정 ──
 springdoc:
   swagger-ui:
-    path: /api
+    path: /swagger-ui
+    disable-swagger-default-url: true
     config-url: /v3/api-docs/swagger-config
     url: /v3/api-docs
-    disable-swagger-default-url: true
+    csrf:
+      enabled: false
     use-root-path: true
   api-docs:
     path: /v3/api-docs
@@ -36,7 +86,7 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
-# Spring Boot Actuator 설정
+# ── Actuator 설정 ──
 management:
   endpoints:
     web:
@@ -44,11 +94,31 @@ management:
         include:
           - health
           - info
+          - metrics
+          - prometheus
       base-path: /actuator
   endpoint:
     health:
-      show-details: when_authorized
-      show-components: always
+      show-details: when-authorized
+      show-components: never
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
   health:
     defaults:
       enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# ── 로깅 설정 ──
+logging:
+  level:
+    org.hibernate.SQL: ${LOG_SQL_LEVEL:DEBUG}
+    org.hibernate.type.descriptor.sql: ${LOG_SQL_TYPE_LEVEL:TRACE}
+    org.springframework.data: ${LOG_SPRING_DATA_LEVEL:DEBUG}
+    org.springframework.web: ${LOG_SPRING_WEB_LEVEL:DEBUG}
+    org.springframework.security: ${LOG_SPRING_SECURITY_LEVEL:DEBUG}
+    org.springdoc: ${LOG_SPRINGDOC_LEVEL:DEBUG}

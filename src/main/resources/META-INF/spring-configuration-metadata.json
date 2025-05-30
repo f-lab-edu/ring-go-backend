@@ -1,0 +1,70 @@
+{
+  "properties": [
+    {
+      "name": "oauth2.callback-base-url",
+      "type": "java.lang.String",
+      "description": "OAuth2 콜백 기본 URL",
+      "defaultValue": "http://localhost:8080"
+    },
+    {
+      "name": "oauth2.kakao.client-id",
+      "type": "java.lang.String",
+      "description": "카카오 OAuth 클라이언트 ID"
+    },
+    {
+      "name": "oauth2.kakao.client-secret",
+      "type": "java.lang.String",
+      "description": "카카오 OAuth 클라이언트 시크릿"
+    },
+    {
+      "name": "oauth2.naver.client-id",
+      "type": "java.lang.String",
+      "description": "네이버 OAuth 클라이언트 ID"
+    },
+    {
+      "name": "oauth2.naver.client-secret",
+      "type": "java.lang.String",
+      "description": "네이버 OAuth 클라이언트 시크릿"
+    },
+    {
+      "name": "oauth2.google.client-id",
+      "type": "java.lang.String",
+      "description": "구글 OAuth 클라이언트 ID"
+    },
+    {
+      "name": "oauth2.google.client-secret",
+      "type": "java.lang.String",
+      "description": "구글 OAuth 클라이언트 시크릿"
+    },
+    {
+      "name": "app.meeting.invite.base-url",
+      "type": "java.lang.String",
+      "description": "모임 초대 링크 기본 URL",
+      "defaultValue": "http://localhost:8080"
+    },
+    {
+      "name": "app.meeting.invite.invite-expiration-days",
+      "type": "java.lang.Long",
+      "description": "모임 초대 만료 기간 (일)",
+      "defaultValue": 3
+    },
+    {
+      "name": "app.meeting.invite.max-members",
+      "type": "java.lang.Integer",
+      "description": "모임 최대 멤버 수",
+      "defaultValue": 5
+    },
+    {
+      "name": "swagger.url",
+      "type": "java.lang.String",
+      "description": "Swagger 서버 URL",
+      "defaultValue": "http://localhost:8080"
+    },
+    {
+      "name": "swagger.description",
+      "type": "java.lang.String",
+      "description": "Swagger 서버 설명",
+      "defaultValue": "Ring-Go API Server"
+    }
+  ]
+}
