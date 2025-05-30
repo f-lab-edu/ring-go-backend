@@ -1,14 +1,14 @@
-# application-local.yml (로컬 환경 특화 설정만)
+# ── application-local.yml (로컬 환경) ──
 spring:
   config:
     activate:
       on-profile: local
 
-  # 로컬 개발용 DB 설정
+  # ── 로컬 H2 데이터베이스 설정 ──
   datasource:
-    url: jdbc:h2:mem:ringgo;MODE=MySQL;NON_KEYWORDS=USER
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:ringgo;MODE=MySQL;NON_KEYWORDS=USER}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.h2.Driver
 
   h2:
@@ -23,11 +23,14 @@ spring:
       data-locations: classpath:db/data-local.sql
 
   jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
-# 로컬 환경 전용 Actuator (개발용 - 최대 개방)
+# ── 로컬 환경 Actuator 설정 ──
 management:
   endpoints:
     web:
