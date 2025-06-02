@@ -61,9 +61,8 @@ class SecurityConfig(
                 configuration.allowedOrigins = listOf(
                     "http://localhost:3000",
                     "http://localhost:8080",
-                    "http://127.0.0.1:3000",
-                    "http://127.0.0.1:8080",
-                    "https://dev.ring-go.kr",
+                    "https://dev.ring-go.kr",      // 프론트엔드
+                    "https://api-dev.ring-go.kr",  // API 서버
                     "https://ring-go.kr",
                     "https://www.ring-go.kr"
                 )

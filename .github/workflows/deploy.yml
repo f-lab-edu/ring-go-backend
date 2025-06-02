@@ -141,9 +141,9 @@ jobs:
             fi
             
             echo "🎉 MVP Development deployment completed successfully!"
-            echo "📱 Application URL: https://dev.ring-go.kr"
-            echo "📋 Swagger UI: https://dev.ring-go.kr/swagger-ui/index.html"
-            echo "🔧 Health Check: https://dev.ring-go.kr/actuator/health"
+            echo "📱 Application URL: https://api-dev.ring-go.kr"
+            echo "📋 Swagger UI: https://api-dev.ring-go.kr/swagger-ui/index.html"
+            echo "🔧 Health Check: https://api-dev.ring-go.kr/actuator/health"
             echo "🔗 Direct IP: http://${{ secrets.AWS_SERVER_IP }}:8080"
             
             # 최종 상태 출력
