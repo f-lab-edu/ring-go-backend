@@ -8,6 +8,8 @@ import com.ringgo.domain.member.entity.enums.MemberStatus
 import com.ringgo.domain.user.entity.User
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
+import jakarta.persistence.ConstraintMode
+import jakarta.persistence.ForeignKey
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -29,15 +31,15 @@ private val log = KotlinLogging.logger {}
 @EntityListeners(AuditingEntityListener::class)
 class Member(
     @Id
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(columnDefinition = "CHAR(36)")
     val id: UUID = UUID.randomUUID(),
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meeting_id", nullable = false)
+    @JoinColumn(name = "meeting_id", nullable = false, foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
     val meeting: Meeting,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
     val user: User,
 
     @Enumerated(EnumType.STRING)

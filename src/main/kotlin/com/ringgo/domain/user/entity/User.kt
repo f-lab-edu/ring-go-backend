@@ -15,7 +15,7 @@ import java.util.*
 @EntityListeners(AuditingEntityListener::class)
 class User(
     @Id
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(columnDefinition = "CHAR(36)")
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, length = 50)

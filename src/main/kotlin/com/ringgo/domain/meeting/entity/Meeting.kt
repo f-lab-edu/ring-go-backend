@@ -3,6 +3,8 @@ package com.ringgo.domain.meeting.entity
 import com.ringgo.domain.meeting.entity.enums.MeetingStatus
 import com.ringgo.domain.user.entity.User
 import jakarta.persistence.*
+import jakarta.persistence.ConstraintMode
+import jakarta.persistence.ForeignKey
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -14,7 +16,7 @@ import java.util.*
 @EntityListeners(AuditingEntityListener::class)
 class Meeting(
     @Id
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(columnDefinition = "CHAR(36)")
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, length = 50)
@@ -28,7 +30,7 @@ class Meeting(
     var status: MeetingStatus = MeetingStatus.ACTIVE,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false)
+    @JoinColumn(name = "creator_id", nullable = false, foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
     val creator: User,
 ) {
     @CreatedDate

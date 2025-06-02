@@ -13,6 +13,9 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
+        # FK 생성 비활성화
+        hbm2ddl:
+          import_files_sql_extractor: org.hibernate.tool.schema.internal.script.MultiLineSqlScriptExtractor
 
   # ── Redis 설정 ──
   data:
