@@ -63,11 +63,9 @@ class SecurityConfig(
                     "http://localhost:8080",
                     "http://127.0.0.1:3000",
                     "http://127.0.0.1:8080",
+                    "https://dev.ring-go.kr",
                     "https://ring-go.kr",
-                    "https://www.ring-go.kr",
-                    "https://app.ring-go.kr",
-                    "https://docs.ring-go.kr",
-                    "https://api.ring-go.kr"
+                    "https://www.ring-go.kr"
                 )
                 configuration.allowCredentials = true
                 log.info { "🚀 개발 CORS: 개발 도메인들 허용" }
