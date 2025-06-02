@@ -14,7 +14,7 @@ private val log = KotlinLogging.logger {}
 
 @Configuration
 class SwaggerConfig(
-    @Value("\${swagger.url}") private val url: String,
+    @Value("\${swagger.url:\${SERVER_BASE_URL:http://localhost:8080}}") private val url: String,
     @Value("\${swagger.description}") private val description: String,
     @Value("\${spring.profiles.active:local}") private val activeProfile: String
 ) {
